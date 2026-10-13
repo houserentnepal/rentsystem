@@ -57,27 +57,84 @@
     notice('ownerMsg', 'स्वागत छ, ' + profile.name + ' ।');
   }
 
-  $('otpSend').addEventListener('click', function () {
-    busy(this, async function () {
+  function ownerAuthStep(step) {
+    const verification = step === 2;
+    show('ownerDetailsStep', !verification);
+    show('ownerVerificationStep', verification);
+    $('ownerStepOneLabel').classList.toggle('is-current', !verification);
+    $('ownerStepTwoLabel').classList.toggle('is-current', verification);
+    if (verification) {
+      $('ownerOtpEmail').textContent = $('ownerEmail').value.trim();
+      $('ownerOtp').focus();
+    }
+  }
+
+  async function sendOwnerOtp() {
+    const email = $('ownerEmail').value.trim();
+    const phone = $('ownerPhone').value.trim();
+    if (!$('ownerEmail').checkValidity()) {
+      $('ownerEmail').reportValidity();
+      return;
+    }
+    if (phone && !/^(?:97|98)\d{8}$/.test(phone)) {
+      notice('authMsg', 'मोबाइल नम्बर ९७ वा ९८ बाट सुरु हुने १० अङ्कको राख्नुहोस् ।', true);
+      $('ownerPhone').focus();
+      return;
+    }
+    const button = $('otpSend');
+    await busy(button, async function () {
       try {
-        const result = await post({action: 'ownerOtp', email: $('ownerEmail').value});
-        notice('authMsg', result.message);
-      } catch (error) { notice('authMsg', error.message, true); }
+        notice('authMsg', 'Email मा OTP पठाइँदैछ...', false);
+        const result = await post({action: 'ownerOtp', email: email});
+        ownerAuthStep(2);
+        notice('authMsg', result.message || 'OTP पठाइएको छ ।');
+      } catch (error) {
+        notice('authMsg', error.message, true);
+      }
     });
+  }
+
+  $('ownerDetailsForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    sendOwnerOtp();
   });
 
-  $('otpVerify').addEventListener('click', function () {
-    busy(this, async function () {
+  $('ownerOtpForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const button = $('otpVerify');
+    busy(button, async function () {
       try {
         const result = await post({
-          action: 'ownerVerify', email: $('ownerEmail').value,
-          otp: $('ownerOtp').value, name: $('ownerName').value,
-          phone: $('ownerPhone').value
+          action: 'ownerVerify',
+          email: $('ownerEmail').value.trim(),
+          otp: $('ownerOtp').value.trim(),
+          name: $('ownerName').value.trim(),
+          phone: $('ownerPhone').value.trim()
         });
         ownerToken = result.token;
         sessionStorage.setItem('nrh_owner_token', ownerToken);
         await loadOwner();
-      } catch (error) { notice('authMsg', error.message, true); }
+      } catch (error) {
+        notice('authMsg', error.message, true);
+      }
+    });
+  });
+
+  $('ownerBackToDetails').addEventListener('click', function () {
+    ownerAuthStep(1);
+    notice('authMsg', '');
+  });
+
+  $('ownerResendOtp').addEventListener('click', async function () {
+    const button = this;
+    await busy(button, async function () {
+      try {
+        notice('authMsg', 'नयाँ OTP पठाइँदैछ...', false);
+        const result = await post({action: 'ownerOtp', email: $('ownerEmail').value.trim()});
+        notice('authMsg', result.message || 'नयाँ OTP पठाइएको छ ।');
+      } catch (error) {
+        notice('authMsg', error.message, true);
+      }
     });
   });
 
@@ -86,6 +143,7 @@
     sessionStorage.removeItem('nrh_owner_token');
     show('ownerLogin', true);
     show('ownerDashboard', false);
+    ownerAuthStep(1);
   });
 
   $('refreshOwner').addEventListener('click', async function () {
