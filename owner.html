@@ -126,6 +126,13 @@
     .owner-voucher-preview { margin-top: 9px; font-size: 13px; color: #17456c; }
     #ownerUploadProgress { font-size: 13px; font-weight: 700; color: #176044; }
     @media (max-width: 680px) { .owner-upload-grid { grid-template-columns: 1fr; } .owner-upload-preview { height: 165px; } }
+    /* Clear Register / Login selection; scoped to Owner Access only. */
+    .owner-auth-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 5px; background: #e9f2fc; border-radius: 12px; margin: 0 0 14px; }
+    .owner-auth-modes button { width: 100%; max-width: none; min-width: 0; border: 0; border-radius: 9px; padding: 10px 8px; font-size: 14px; font-weight: 700; color: #25527c; background: transparent; cursor: pointer; }
+    .owner-auth-modes button.is-selected { background: #0967bd; color: #fff; box-shadow: 0 2px 8px #074b8933; }
+    .owner-auth-modes button:focus-visible { outline: 3px solid #f6bf34; outline-offset: 2px; }
+    .owner-auth-split .owner-auth-mode-hint { margin: 4px 0 10px; font-size: 12px; color: #58718b; }
+    @media (max-width: 520px) { .owner-auth-modes button { font-size: 12px; } }
   </style>
 </head>
 <body>
@@ -156,18 +163,22 @@
           <p>आफ्नो Account बनाउन वा Login गर्न आफ्नो विवरण भर्नुहोस् ।</p>
         </div>
       <div class="owner-auth-body">
+        <div class="owner-auth-modes" role="group" aria-label="खाता खोल्ने वा लगइन गर्ने विकल्प">
+          <button type="button" id="ownerModeRegister" class="is-selected" aria-pressed="true">＋ नयाँ Account (Register)</button>
+          <button type="button" id="ownerModeLogin" aria-pressed="false">↪ Login गर्नुहोस्</button>
+        </div>
         <div class="owner-auth-steps" aria-label="Registration progress">
           <div class="owner-auth-step is-current" id="ownerStepOneLabel"><span class="owner-auth-step-number">1</span> विवरण</div>
           <div class="owner-auth-step-line"></div>
           <div class="owner-auth-step" id="ownerStepTwoLabel"><span class="owner-auth-step-number">2</span> Email Verification</div>
         </div>
         <div id="ownerDetailsStep">
-          <h3>① आफ्नो विवरण भर्नुहोस्</h3>
-          <p class="owner-auth-help">पहिलोपटक नाम, मोबाइल र Email राख्नुहोस् । पहिले नै Account छ भने Email मात्र राखेर अघि बढ्न सक्नुहुन्छ ।</p>
+          <h3 id="ownerDetailsTitle">① नयाँ Account बनाउनुहोस्</h3>
+          <p class="owner-auth-help"><span id="ownerModeHelp">नाम, मोबाइल नम्बर र Email भरेर OTP मार्फत Account प्रमाणित गर्नुहोस् ।</span></p>
           <form id="ownerDetailsForm" class="owner-form">
             <div class="two">
-              <div class="field"><label for="ownerName">पूरा नाम (नयाँ User)</label><input id="ownerName" maxlength="100" autocomplete="name" placeholder="आफ्नो पूरा नाम"></div>
-              <div class="field"><label for="ownerPhone">मोबाइल नम्बर (नयाँ User)</label><input id="ownerPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98XXXXXXXX"></div>
+              <div class="field" id="ownerNameField"><label for="ownerName">पूरा नाम *</label><input id="ownerName" maxlength="100" autocomplete="name" placeholder="आफ्नो पूरा नाम"></div>
+              <div class="field" id="ownerPhoneField"><label for="ownerPhone">मोबाइल नम्बर *</label><input id="ownerPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98XXXXXXXX"></div>
               <div class="field"><label for="ownerEmail">Email Address *</label><input type="email" id="ownerEmail" required autocomplete="email" placeholder="you@example.com"></div>
             </div>
             <div class="owner-actions"><button type="submit" id="otpSend">➤ OTP पठाउनुहोस्</button></div>
@@ -178,7 +189,7 @@
           <p class="owner-auth-help">तपाईंको <strong id="ownerOtpEmail"></strong> मा पठाइएको ६ अङ्कको OTP राख्नुहोस् ।</p>
           <form id="ownerOtpForm" class="owner-form">
             <div class="field"><label for="ownerOtp">६ अङ्कको OTP *</label><input id="ownerOtp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required></div>
-            <div class="owner-actions"><button type="submit" id="otpVerify">Verify & Login →</button><button type="button" id="ownerBackToDetails" class="secondary">← विवरण सच्याउनुहोस्</button></div>
+            <div class="owner-actions"><button type="submit" id="otpVerify">Verify & Continue →</button><button type="button" id="ownerBackToDetails" class="secondary">← विवरण सच्याउनुहोस्</button></div>
           </form>
           <p class="owner-auth-help">OTP आएन? <button type="button" id="ownerResendOtp" class="secondary">फेरि पठाउनुहोस्</button></p>
         </div>
