@@ -24,6 +24,22 @@
     .owner-form button { max-width: 360px; }
     .owner-note { border-left: 4px solid #d49c27; padding: 12px 16px; background: #fff8e8; border-radius: 8px; }
     .owner-hidden { display: none !important; }
+    .owner-auth { max-width: 820px; margin: 26px auto; overflow: hidden; padding: 0; border-radius: 24px; border: 1px solid #dce6f2; box-shadow: 0 18px 45px rgba(9,45,83,.09); background: #fff; }
+    .owner-auth-heading { background: linear-gradient(110deg,#0a315b,#17679b); color: #fff; padding: 28px 32px; }
+    .owner-auth-heading h2 { color: #fff; margin: 8px 0; font-size: clamp(22px,3vw,28px); }
+    .owner-auth-heading p { color: #e0edfa; margin: 0; }
+    .owner-auth-body { padding: 28px 32px 32px; }
+    .owner-auth-steps { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; font-size: 13px; font-weight: 700; color: #59738e; }
+    .owner-auth-step { display: flex; align-items: center; gap: 8px; }
+    .owner-auth-step-number { display: grid; place-items: center; height: 28px; width: 28px; border-radius: 50%; background: #eaf2fc; color: #15598c; }
+    .owner-auth-step.is-current { color: #0b477c; }
+    .owner-auth-step.is-current .owner-auth-step-number { background: #0c67b4; color: #fff; }
+    .owner-auth-step-line { flex: 1; height: 2px; background: #d9e5f1; }
+    .owner-auth .field input { background: #fff; }
+    .owner-auth .owner-actions button { min-width: 170px; max-width: none; }
+    .owner-auth .owner-auth-help { color: #60758d; font-size: 13px; margin: 10px 0 0; }
+    .owner-auth #authMsg:empty { display: none; }
+    @media (max-width:650px) { .owner-auth-heading,.owner-auth-body { padding: 22px 18px; } .owner-auth .owner-actions button { width: 100%; } }
     .owner-photo { max-height: 145px; max-width: 100%; object-fit: cover; border-radius: 12px; }
     .owner-status { font-size: 13px; font-weight: 700; color: #17456c; }
     @media (max-width:650px) { .owner-hero { padding: 20px; } .owner-actions button { flex: 1 1 auto; } }
@@ -40,18 +56,41 @@
       <h1>मेरो सम्पत्ति व्यवस्थापन</h1>
       <p>एउटै Unit ID बाट भाडामा गएको इतिहास, खाली भएको अवस्था र पुनः विज्ञापन व्यवस्थापन गर्नुहोस् ।</p>
     </div>
-    <section id="ownerLogin" class="panel owner-form">
-      <h2>✉ Email OTP Login</h2>
-      <p class="muted">पहिलोपटक Account बनाउन नाम, मोबाइल र Email राख्नुहोस् । अर्को पटक Email र OTP मात्र चाहिन्छ ।</p>
-      <div class="two">
-        <div class="field"><label>Email *</label><input type="email" id="ownerEmail" required autocomplete="email" placeholder="you@example.com"></div>
-        <div class="field"><label>नाम (नयाँ User)</label><input id="ownerName" maxlength="100" placeholder="पूरा नाम"></div>
-        <div class="field"><label>मोबाइल (नयाँ User)</label><input id="ownerPhone" inputmode="tel" placeholder="98XXXXXXXX"></div>
+    <section id="ownerLogin" class="owner-auth" aria-label="Owner account login">
+      <div class="owner-auth-heading">
+        <span>NEPAL RENT HUB · OWNER ACCESS</span>
+        <h2>🏠 आफ्नो सम्पत्ति व्यवस्थापन सुरु गर्नुहोस्</h2>
+        <p>सुरक्षित Email Verification मार्फत आफ्नो Account खोल्नुहोस् वा Login गर्नुहोस् ।</p>
       </div>
-      <div class="owner-actions"><button type="button" id="otpSend">OTP पठाउनुहोस्</button></div>
-      <div class="field"><label>Email मा आएको ६ अङ्कको OTP</label><input id="ownerOtp" inputmode="numeric" maxlength="6" placeholder="000000"></div>
-      <div class="owner-actions"><button type="button" id="otpVerify">Verify & Login</button></div>
-      <p id="authMsg" role="status"></p>
+      <div class="owner-auth-body">
+        <div class="owner-auth-steps" aria-label="Registration progress">
+          <div class="owner-auth-step is-current" id="ownerStepOneLabel"><span class="owner-auth-step-number">1</span> विवरण</div>
+          <div class="owner-auth-step-line"></div>
+          <div class="owner-auth-step" id="ownerStepTwoLabel"><span class="owner-auth-step-number">2</span> Email Verification</div>
+        </div>
+        <div id="ownerDetailsStep">
+          <h3>आफ्नो विवरण भर्नुहोस्</h3>
+          <p class="owner-auth-help">पहिलोपटक नाम, मोबाइल र Email राख्नुहोस् । पहिले नै Account छ भने Email मात्र राखेर अघि बढ्न सक्नुहुन्छ ।</p>
+          <form id="ownerDetailsForm" class="owner-form">
+            <div class="two">
+              <div class="field"><label for="ownerName">पूरा नाम (नयाँ User)</label><input id="ownerName" maxlength="100" autocomplete="name" placeholder="आफ्नो पूरा नाम"></div>
+              <div class="field"><label for="ownerPhone">मोबाइल नम्बर (नयाँ User)</label><input id="ownerPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98XXXXXXXX"></div>
+              <div class="field"><label for="ownerEmail">Email Address *</label><input type="email" id="ownerEmail" required autocomplete="email" placeholder="you@example.com"></div>
+            </div>
+            <div class="owner-actions"><button type="submit" id="otpSend">Email Verify गर्नुहोस् →</button></div>
+          </form>
+        </div>
+        <div id="ownerVerificationStep" class="owner-hidden">
+          <h3>✉ Email Verification</h3>
+          <p class="owner-auth-help">तपाईंको <strong id="ownerOtpEmail"></strong> मा पठाइएको ६ अङ्कको OTP राख्नुहोस् ।</p>
+          <form id="ownerOtpForm" class="owner-form">
+            <div class="field"><label for="ownerOtp">६ अङ्कको OTP *</label><input id="ownerOtp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required></div>
+            <div class="owner-actions"><button type="submit" id="otpVerify">Verify & Login →</button><button type="button" id="ownerBackToDetails" class="secondary">← विवरण सच्याउनुहोस्</button></div>
+          </form>
+          <p class="owner-auth-help">OTP आएन? <button type="button" id="ownerResendOtp" class="secondary">फेरि पठाउनुहोस्</button></p>
+        </div>
+        <p id="authMsg" role="status" aria-live="polite"></p>
+      </div>
     </section>
     <section id="ownerDashboard" class="owner-hidden">
       <div class="owner-actions">
