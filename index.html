@@ -4,6 +4,32 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Nepal Rent Hub | नेपालभर भाडाको सम्पत्ति</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Footer refinement: only public website footer; no Admin styles affected. */
+    .nrh-footer .footer-contact p,
+    .nrh-footer .footer-links p {
+      margin: 0 0 10px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .nrh-footer .footer-contact a,
+    .nrh-footer .footer-links a {
+      color: #e7f2ff;
+      text-decoration: none;
+    }
+
+    .nrh-footer .footer-contact a:hover,
+    .nrh-footer .footer-links a:hover {
+      text-decoration: underline;
+      color: #ffffff;
+    }
+
+    .nrh-footer .nrh-footer-inner > div {
+      min-width: 0;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
 <header class="nrh-header">
@@ -94,7 +120,38 @@
     </div></div>
   </section>
 </main>
-<footer class="nrh-footer"><div class="nrh-footer-inner"><div><h3>🏠 Nepal Rent Hub</h3><p>Find Your Perfect Rental Property</p><p>नेपालभर भाडाको सम्पत्ति खोज्ने प्लेटफर्म ।</p></div><div><h3>सम्पर्क जानकारी</h3><p>सम्पर्क र ठेगाना माथिको Contact Section मा Google Sheet बाट उपलब्ध छन् ।</p></div><div><h3>द्रुत लिङ्कहरू</h3><p><a href="index.html">Home</a> · <a href="#post" id="footerPost">Post Property</a></p><p><a href="#contact">Contact</a> · <a href="admin.html">Admin</a></p></div><div><h3>हाम्रो बारेमा</h3><p>कोठा, फ्ल्याट, सटर र घरको जानकारी दिने डिजिटल प्लेटफर्म ।</p></div></div><div class="nrh-footer-bottom"><span>© 2026 Nepal Rent Hub. All Rights Reserved.</span><span>Designed &amp; Developed by Nirajan Aryal (9851113811)</span></div></footer>
+<footer class="nrh-footer">
+  <div class="nrh-footer-inner">
+    <div>
+      <h3>🏠 Nepal Rent Hub</h3>
+      <p>Find Your Perfect Rental Property</p>
+      <p>नेपालभर भाडाको सम्पत्ति खोज्ने प्लेटफर्म ।</p>
+    </div>
+    <div class="footer-contact">
+      <h3>सम्पर्क जानकारी</h3>
+      <p id="footerPhoneLine" class="hidden">☎ <a id="footerPhoneLink"></a></p>
+      <p id="footerEmailLine" class="hidden">✉ <a id="footerEmailLink"></a></p>
+      <p id="footerAddressLine" class="hidden">📍 <span id="footerAddressText"></span></p>
+      <p id="footerWhatsappLine" class="hidden">💬 <a id="footerWhatsappLink" target="_blank" rel="noopener noreferrer">WhatsApp</a></p>
+      <p id="footerMapLine" class="hidden">🗺 <a id="footerMapLink" target="_blank" rel="noopener noreferrer">Google Maps</a></p>
+    </div>
+    <div class="footer-links">
+      <h3>द्रुत लिङ्कहरू</h3>
+      <p><a href="index.html">Home</a></p>
+      <p><a href="#post" id="footerPost">Post Property</a></p>
+      <p><a href="#contact">Contact</a></p>
+      <p><a href="admin.html">Admin</a></p>
+    </div>
+    <div>
+      <h3>हाम्रो बारेमा</h3>
+      <p>कोठा, फ्ल्याट, सटर र घरको जानकारी दिने डिजिटल प्लेटफर्म ।</p>
+    </div>
+  </div>
+  <div class="nrh-footer-bottom">
+    <span>© 2026 Nepal Rent Hub. All Rights Reserved.</span>
+    <span>Designed &amp; Developed by Nirajan Aryal (9851113811)</span>
+  </div>
+</footer>
 <script src="app.js"></script>
 <script>
 let allListings=[];
@@ -155,6 +212,24 @@ function showSiteInfo(config) {
   if(map) $('contactLocationLink').href=map;
   show('contactWhatsappLine',whatsapp);
   if(whatsapp) $('contactWhatsappLink').href='https://wa.me/'+whatsapp;
+
+  // Reuse the same Google Sheet Settings in the footer.
+  show('footerPhoneLine', phone);
+  $('footerPhoneLink').textContent = phone;
+  $('footerPhoneLink').href = 'tel:' + phone.replace(/[^+\d]/g, '');
+
+  show('footerEmailLine', email);
+  $('footerEmailLink').textContent = email;
+  $('footerEmailLink').href = 'mailto:' + email;
+
+  show('footerAddressLine', address);
+  $('footerAddressText').textContent = address;
+
+  show('footerWhatsappLine', whatsapp);
+  if (whatsapp) $('footerWhatsappLink').href = 'https://wa.me/' + whatsapp;
+
+  show('footerMapLine', map);
+  if (map) $('footerMapLink').href = map;
 }
 
 $('propertyForm').addEventListener('submit',async event=>{
