@@ -10,25 +10,44 @@
   <header><div class="brand">🏠 Nepal Rent Hub <span class="admin-mark">ADMIN CONSOLE</span></div><nav><a href="index.html">↗ सार्वजनिक वेबसाइट</a></nav></header>
   <main>
     <section class="panel login-card" id="loginPanel">
+      <div class="auth-eyebrow">NEPAL RENT HUB · ADMINISTRATION</div>
       <div class="login-icon">🔐</div>
-      <h1>Admin Login</h1>
+      <h1>Welcome Back</h1>
+      <p class="muted auth-subtitle">प्रशासनिक खातामा सुरक्षित रूपमा प्रवेश गर्नुहोस् ।</p>
 
       <form id="loginForm">
         <div class="field"><label for="username">Username</label><input id="username" required autocomplete="username" placeholder="Admin username"></div>
-        <div class="field"><label for="password">Password</label><input type="password" id="password" required autocomplete="current-password" placeholder="Password"></div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-field">
+            <input type="password" id="password" required autocomplete="current-password" placeholder="Password">
+            <button type="button" id="togglePassword" class="password-eye" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+        </div>
         <button id="loginBtn" type="submit">सुरक्षित Login गर्नुहोस् →</button>
       </form>
-      <button type="button" class="link-button" id="forgotToggle">Forgot Password? / पासवर्ड बिर्सनुभयो?</button>
+      <button type="button" class="forgot-link" id="forgotToggle">🔑 Forgot Password? / पासवर्ड बिर्सनुभयो?</button>
       <div id="loginMsg" aria-live="polite"></div>
       <div id="resetPanel" class="hidden reset-panel">
-        <h2>Gmail OTP Password Reset</h2>
+        <div class="reset-header">
+          <span class="reset-symbol">✉</span>
+          <div>
+            <h2>Reset Password</h2>
+            <p class="muted small">दर्ता भएको Gmail मा प्राप्त OTP Verify गर्नुहोस् ।</p>
+          </div>
+        </div>
+        <div class="reset-progress" aria-label="Reset steps">
+          <span id="resetStep1" class="current">1 · Gmail OTP</span>
+          <span id="resetStep2">2 · Verify</span>
+          <span id="resetStep3">3 · New Password</span>
+        </div>
         <form id="resetRequestForm">
           <div class="field"><label for="resetUsername">Username</label><input id="resetUsername" required></div>
-          <button id="sendOtpBtn" type="submit">Gmail मा OTP पठाउनुहोस्</button>
+          <button id="sendOtpBtn" type="submit">✉ Gmail मा OTP पठाउनुहोस्</button>
         </form>
         <form id="resetVerifyForm" class="hidden">
           <div class="field"><label for="resetOtp">६ अङ्कको OTP</label><input id="resetOtp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required></div>
-          <button id="verifyOtpBtn" type="submit">OTP Verify गर्नुहोस्</button>
+          <button id="verifyOtpBtn" type="submit">OTP Verify गर्नुहोस् →</button>
         </form>
         <form id="resetPasswordForm" class="hidden">
           <div class="field"><label for="newPassword">नयाँ Password</label><input id="newPassword" type="password" minlength="8" required></div>
@@ -71,10 +90,27 @@
     $('adminSearch').addEventListener('input',renderAdmin);$('adminStatus').addEventListener('change',renderAdmin);
     $('settingsForm').addEventListener('submit',async e=>{e.preventDefault();$('settingsSave').disabled=true;try{await post({action:'adminSaveSettings',token,settings:Object.fromEntries(new FormData(e.target))});message($('settingsMsg'),'Settings saved to Google Sheet.','notice success');}catch(err){message($('settingsMsg'),err.message,'notice error');}finally{$('settingsSave').disabled=false;}});
     $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;try{const r=await post({action:'login',username:$('username').value,password:$('password').value});token=r.token;sessionStorage.setItem('nrh_admin_token',token);$('password').value='';$('welcome').textContent='Welcome, '+(r.displayName||'Admin');showDashboard();}catch(err){message($('loginMsg'),err.message,'notice error');}finally{$('loginBtn').disabled=false;}});
-    let resetTicket='';
+    let resetTicket = '';
+
+    function setResetStep(step) {
+      for (let number = 1; number <= 3; number += 1) {
+        $('resetStep' + number).classList.toggle('current', number === step);
+        $('resetStep' + number).classList.toggle('completed', number < step);
+      }
+    }
+
+    $('togglePassword').addEventListener('click', function () {
+      const input = $('password');
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      this.textContent = visible ? 'Hide' : 'Show';
+      this.setAttribute('aria-pressed', String(visible));
+      this.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+    });
     $('forgotToggle').addEventListener('click', function () {
       $('resetPanel').classList.toggle('hidden');
       $('resetUsername').value=$('username').value;
+      setResetStep(1);
     });
     $('resetRequestForm').addEventListener('submit', async function (event) {
       event.preventDefault();
@@ -84,6 +120,7 @@
         const result=await post({action:'requestPasswordOtp',username:$('resetUsername').value});
         message($('resetMsg'),result.message,'notice success');
         $('resetVerifyForm').classList.remove('hidden');
+        setResetStep(2);
       } catch(error) {message($('resetMsg'),error.message,'notice error');}
       finally {button.disabled=false;}
     });
@@ -94,6 +131,7 @@
         const result=await post({action:'verifyPasswordOtp',username:$('resetUsername').value,otp:$('resetOtp').value});
         resetTicket=result.resetTicket;
         $('resetPasswordForm').classList.remove('hidden');
+        setResetStep(3);
         message($('resetMsg'),'OTP सफलतापूर्वक Verify भयो ।','notice success');
       } catch(error) {message($('resetMsg'),error.message,'notice error');}
       finally {button.disabled=false;}
@@ -109,6 +147,7 @@
         resetTicket='';
         $('resetPasswordForm').reset();
         $('resetPanel').classList.add('hidden');
+        setResetStep(1);
         message($('loginMsg'),result.message,'notice success');
       } catch(error) {message($('resetMsg'),error.message,'notice error');}
       finally {button.disabled=false;}
