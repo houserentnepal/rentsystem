@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ne">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nepal Rent Hub | नेपालभर भाडाको सम्पत्ति</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Footer refinement: only public website footer; no Admin styles affected. */
+    .nrh-footer .footer-contact p,
+    .nrh-footer .footer-links p {
+      margin: 0 0 10px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .nrh-footer .footer-contact a,
+    .nrh-footer .footer-links a {
+      color: #e7f2ff;
+      text-decoration: none;
+    }
+
+    .nrh-footer .footer-contact a:hover,
+    .nrh-footer .footer-links a:hover {
+      text-decoration: underline;
+      color: #ffffff;
+    }
+
+    .nrh-footer .nrh-footer-inner > div {
+      min-width: 0;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+<header class="nrh-header">
+  <div class="nrh-header-inner">
+    <a class="brand" href="index.html"><span class="brand-icon">🏠</span><span><strong>Nepal Rent Hub</strong><small>Find Your Perfect Rental Property</small></span></a>
+    <nav class="nrh-nav" aria-label="Main navigation">
+      <a class="active" href="index.html">⌂ Home</a>
+      <a href="#post" id="postNav">⌂ Post Property</a>
+      <a href="#contact">☎ Contact</a>
+      <a href="admin.html">♙ Admin</a>
+    </nav>
+    <select class="lang" aria-label="Language" onchange="setLanguage(this.value)" id="language"><option value="ne">नेपाली</option><option value="en">English</option></select>
+  </div>
+</header>
+<main class="nrh-main">
+  <section class="hero" aria-label="Find rental property">
+    <div class="hero-content">
+      <div class="hero-copy">
+        <h1 id="headline">आफ्नो लागि उपयुक्त<br><em>भाडाको सम्पत्ति</em> खोज्नुहोस्</h1>
+        <h3>Find Your Perfect Rental Property in Nepal</h3>
+        <p id="subhead">कोठा, फ्ल्याट, सटर, घर — सजिलै खोज्नुहोस्, सुरक्षित रूपमा भाडामा लिनुहोस् ।</p>
+      </div>
+      <aside class="hero-trust"><strong>🏠 विश्वासिलो भाडा प्लेटफर्म</strong><span>✓ प्रमाणित सूचीकरण</span><span>✓ वास्तविक जानकारी</span><span>✓ सुरक्षित भुक्तानी प्रक्रिया</span><span>✓ छिटो र सजिलो</span></aside>
+    </div>
+    <div class="searchbar" role="search">
+      <label class="search-field"><span>📍 स्थान / Location</span><input id="keyword" placeholder="जिल्ला, पालिका वा टोल" aria-label="Location"></label>
+      <label class="search-field"><span>🏢 सम्पत्तिको प्रकार</span><select id="type" aria-label="Property type"><option value="">सबै प्रकार / All types</option><option value="room">कोठा / Room</option><option value="flat">फ्ल्याट / Flat</option><option value="shutter">सटर / Shutter</option><option value="house">घर / House</option></select></label>
+      <label class="search-field"><span>💰 अधिकतम मासिक भाडा</span><input id="maxRent" type="number" min="0" placeholder="भाडा दायरा" aria-label="Maximum rent"></label>
+      <label class="search-field nrh-advanced-filter"><span>📍 प्रदेश / Province</span><select id="filterProvince"><option value="">सबै प्रदेश</option><option>कोशी</option><option>मधेश</option><option>बागमती</option><option>गण्डकी</option><option>लुम्बिनी</option><option>कर्णाली</option><option>सुदूरपश्चिम</option></select></label>
+      <label class="search-field nrh-advanced-filter"><span>📍 जिल्ला / District</span><select id="filterDistrict" disabled aria-label="जिल्ला"><option value="">पहिले प्रदेश छान्नुहोस्</option></select></label>
+      <label class="search-field nrh-advanced-filter"><span>📍 पालिका / Municipality</span><select id="filterMunicipality" disabled aria-label="पालिका"><option value="">पहिले जिल्ला छान्नुहोस्</option></select></label>
+            <button type="button" onclick="renderListings()" id="searchBtn">⌕ खोज्नुहोस्</button>
+    </div>
+  </section>
+  <section class="category-section">
+    <div class="nrh-section-title"><h2>सम्पत्तिको प्रकार</h2><p>तपाईंलाई चाहिएको सम्पत्ति छान्नुहोस्</p></div>
+    <div class="category-grid">
+      <button type="button" class="category-card" data-property="room"><img src="room.webp" alt="कोठा" loading="lazy"><span class="category-body"><span class="category-icon room-icon">▣</span><span><strong>कोठा / Room</strong><small>भाडामा कोठा खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="flat"><img src="flat.webp" alt="फ्ल्याट" loading="lazy"><span class="category-body"><span class="category-icon flat-icon">▦</span><span><strong>फ्ल्याट / Flat</strong><small>भाडामा फ्ल्याट खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="shutter"><img src="shutter.webp" alt="सटर" loading="lazy"><span class="category-body"><span class="category-icon shutter-icon">▤</span><span><strong>सटर / Shutter</strong><small>भाडामा सटर खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="house"><img src="house.webp" alt="घर" loading="lazy"><span class="category-body"><span class="category-icon house-icon">⌂</span><span><strong>घर / House</strong><small>भाडामा घर खोज्नुहोस्</small></span><b>➜</b></span></button>
+    </div>
+  </section>
+  <section class="latest-section"><div class="section-heading"><div><h2 id="latestTitle">नवीनतम सम्पत्तिहरू</h2><p class="muted">हाल उपलब्ध भएका सम्पत्तिहरू</p></div><button type="button" class="fit" id="postCta">＋ सम्पत्ति पोस्ट गर्नुहोस्</button></div><p id="listMsg" class="muted" aria-live="polite">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
+  <section id="post" class="panel hidden" aria-label="Property registration">
+    <div class="section-heading"><h2>सम्पत्ति विज्ञापन दर्ता / Post Property</h2><button type="button" class="secondary fit" id="closePost">✕ Close</button></div>
+    <h2 id="postTitle">सम्पत्ति विज्ञापन पोस्ट गर्नुहोस्</h2>
+    <p class="notice" id="policy">सबै विज्ञापन सशुल्क छन् । Bank QR भुक्तानी प्रमाण Admin ले जाँच गरेपछि मात्र पोस्ट स्वीकृति प्रक्रियामा जान्छ ।</p>
+    <div id="bankInfo" class="notice">Bank QR विवरण लोड हुँदैछ...</div>
+    <form id="propertyForm">
+      <div class="form-intro">
+        <strong>सम्पत्तिको विवरण भर्नुहोस्</strong>
+        <p class="muted">सबै आवश्यक विवरण भरेर भुक्तानी प्रमाणसहित Admin Review मा पठाउनुहोस् ।</p>
+      </div>
+      <div class="two">
+        <div class="field"><label>पोस्टकर्ताको नाम / Name *</label><input name="posterName" required maxlength="100"></div>
+        <div class="field"><label>मोबाइल / Mobile *</label><input name="posterPhone" required inputmode="tel" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>पोस्टकर्ता / Poster *</label><select name="posterRole" required><option value="owner">घरधनी / Owner</option><option value="agent">एजेन्ट / Agent</option></select></div>
+        <div class="field"><label>सम्पत्तिको प्रकार / Type *</label><select name="type" required><option value="room">कोठा</option><option value="flat">फ्ल्याट</option><option value="shutter">सटर</option><option value="house">घर</option></select></div>
+        <div class="field"><label>विज्ञापन शीर्षक / Title *</label><input name="title" required maxlength="140" placeholder="e.g. 2 BHK Flat for rent"></div>
+        <div class="field"><label>प्रदेश / Province *</label><select name="province" required><option value="">छान्नुहोस्</option><option>कोशी</option><option>मधेश</option><option>बागमती</option><option>गण्डकी</option><option>लुम्बिनी</option><option>कर्णाली</option><option>सुदूरपश्चिम</option></select></div>
+        <div class="field"><label>जिल्ला / District *</label><select name="district" id="districtSelect" required disabled><option value="">पहिले प्रदेश छान्नुहोस्</option></select></div>
+        <div class="field"><label>पालिका / Municipality *</label><select name="municipality" id="municipalitySelect" required disabled><option value="">पहिले जिल्ला छान्नुहोस्</option></select></div>
+        <div class="field"><label>वडा / Ward *</label><select name="ward" id="wardSelect" required disabled><option value="">पहिले पालिका छान्नुहोस्</option></select></div>
+        <div class="field"><label>टोल / Locality *</label><input name="locality" required maxlength="150"></div>
+        <div class="field"><label>मासिक भाडा (रु.) *</label><input name="rent" required type="number" min="1" max="100000000"></div>
+        <div class="field"><label>डिपोजिट (रु.)</label><input name="deposit" type="number" min="0" value="0"></div>
+        <div class="field"><label>सम्पर्क नम्बर / Contact *</label><input name="contactPhone" required inputmode="tel"></div>
+        <div class="field"><label>सुविधाहरू / Amenities</label><input name="amenities" placeholder="Parking, Water, Kitchen"></div>
+      </div>
+      <div class="field"><label>विवरण / Description</label><textarea name="description" maxlength="2500"></textarea></div>
+      <div class="field"><label>फोटो URL (प्रत्येक लाइनमा एउटा HTTPS लिंक)</label><textarea name="photoUrls" id="propertyPhotoUrls" placeholder="https://...jpg"></textarea><div id="photoPreview" class="nrh-photo-preview" aria-live="polite"></div></div>
+      <div class="two">
+        <div class="field"><label>Payment Method</label><input name="paymentMethod" value="BANK_QR" readonly></div>
+        <div class="field"><label>Bank Transaction Reference *</label><input name="paymentReference" required maxlength="150"></div>
+      </div>
+      <div class="field"><label>भुक्तानी प्रमाणको HTTPS URL / Payment proof link *</label><input name="paymentProofUrl" type="url" required placeholder="https://..."></div>
+      <p class="muted small">यो MVP मा प्रत्यक्ष फोटो/भौचर Upload, मोबाइल OTP र eSewa/Khalti API अझै जोडिएको छैन । संवेदनशील परिचयपत्रको लिंक यहाँ नराख्नुहोस् ।</p>
+      <button type="submit" id="submitBtn">Admin Review का लागि पठाउनुहोस्</button>
+      <div id="formMsg" style="margin-top:12px" aria-live="polite"></div>
+      <p class="small muted">एउटै सम्पत्ति पुनः पठाउनुअघि विवरण जाँच गर्नुहोस् । दोहोरो विज्ञापनको अन्तिम जाँच Admin ले गर्नेछ ।</p>
+    </form>
+  </section>
+  <section id="contact" class="panel about-panel">
+    <div><p class="section-kicker">ABOUT NEPAL RENT HUB</p><h2>हाम्रो बारेमा</h2><p id="aboutText" class="muted">नेपालभर भाडामा उपलब्ध सम्पत्ति खोज्ने तथा विज्ञापन गर्ने प्लेटफर्म ।</p></div>
+    <div><h2>सम्पर्क / Contact</h2><div class="about-links">
+      <p id="contactPhoneLine" class="hidden">☎ <a id="contactPhoneLink"></a></p>
+      <p id="contactEmailLine" class="hidden">✉ <a id="contactEmailLink"></a></p>
+      <p id="contactAddressLine" class="hidden">📍 <span id="contactAddressText"></span></p>
+      <p id="contactLocationLine" class="hidden">🗺 <a id="contactLocationLink" target="_blank" rel="noopener noreferrer">Google Maps</a></p>
+      <p id="contactWhatsappLine" class="hidden">💬 <a id="contactWhatsappLink" target="_blank" rel="noopener noreferrer">WhatsApp</a></p>
+    </div></div>
+  </section>
+</main>
+<footer class="nrh-footer">
+  <div class="nrh-footer-inner">
+    <div>
+      <h3>🏠 Nepal Rent Hub</h3>
+      <p>Find Your Perfect Rental Property</p>
+      <p>नेपालभर भाडाको सम्पत्ति खोज्ने प्लेटफर्म ।</p>
+    </div>
+    <div class="footer-contact">
+      <h3>सम्पर्क जानकारी</h3>
+      <p id="footerPhoneLine" class="hidden">☎ <a id="footerPhoneLink"></a></p>
+      <p id="footerEmailLine" class="hidden">✉ <a id="footerEmailLink"></a></p>
+      <p id="footerAddressLine" class="hidden">📍 <span id="footerAddressText"></span></p>
+      <p id="footerWhatsappLine" class="hidden">💬 <a id="footerWhatsappLink" target="_blank" rel="noopener noreferrer">WhatsApp</a></p>
+      <p id="footerMapLine" class="hidden">🗺 <a id="footerMapLink" target="_blank" rel="noopener noreferrer">Google Maps</a></p>
+    </div>
+    <div class="footer-links">
+      <h3>द्रुत लिङ्कहरू</h3>
+      <p><a href="index.html">Home</a></p>
+      <p><a href="#post" id="footerPost">Post Property</a></p>
+      <p><a href="#contact">Contact</a></p>
+      <p><a href="admin.html">Admin</a></p>
+    </div>
+    <div>
+      <h3>हाम्रो बारेमा</h3>
+      <p>कोठा, फ्ल्याट, सटर र घरको जानकारी दिने डिजिटल प्लेटफर्म ।</p>
+    </div>
+  </div>
+  <div class="nrh-footer-bottom">
+    <span>© 2026 Nepal Rent Hub. All Rights Reserved.</span>
+    <span>Designed &amp; Developed by Nirajan Aryal (9851113811)</span>
+  </div>
+</footer>
+<script src="app.js"></script>
+<script src="nepal-locations.js"></script>
+<script>
+let allListings=[];
+function renderListings() {
+  const key=$('keyword').value.trim().toLowerCase(),type=$('type').value,max=Number($('maxRent').value||0),province=$('filterProvince').value,district=$('filterDistrict').value.trim().toLowerCase(),municipality=$('filterMunicipality').value.trim().toLowerCase();
+  const data=allListings.filter(p=>(!type||p.type===type)&&(!max||p.rent<=max)&&(!province||p.province===province)&&(!district||String(p.district||'').toLowerCase().includes(district))&&(!municipality||String(p.municipality||'').toLowerCase().includes(municipality))&&(!key||[p.title,p.province,p.district,p.municipality,p.locality].join(' ').toLowerCase().includes(key)));
+  $('listMsg').textContent=t(`${data.length} विज्ञापन भेटिए`,`Found ${data.length} listings`);
+  $('listings').innerHTML=data.map(p=>`<article class="listing">${showPhoto(p.photoUrls?.[0])}<span class="pill">${esc(p.type)}</span><h3>${esc(p.title)}</h3><p class="muted">📍 ${esc(p.locality)}, ${esc(p.district)}</p><div class="price">${money(p.rent)} / ${t('महिना','month')}</div><p class="small">${esc(p.description).slice(0,180)}</p><div class="actions"><button type="button" onclick="showContact('${esc(p.id)}')">${t('सम्पर्क नम्बर हेर्नुहोस्','Show Contact')}</button></div><div class="small" id="contact-${esc(p.id)}"></div></article>`).join('');
+}
+function showContact(id){const p=allListings.find(x=>x.id===id);if(!p)return;const el=$('contact-'+id);el.textContent='☎ '+p.contactPhone;}
+async function load(){
+  if(!API_READY){$('listMsg').textContent='First configure the Apps Script API URL in app.js.';$('bankInfo').textContent='Configure API URL and Bank QR in Google Sheet Settings.';return;}
+  try {const [items,config]=await Promise.all([jsonp('list'),jsonp('config')]);if(!items.ok||!config.ok)throw Error('API error');allListings=items.data;renderListings();const c=config.data;showSiteInfo(c);const qr=safeImage(c.bankQrUrl);$('bankInfo').innerHTML=`<strong>${t('विज्ञापन शुल्क','Listing fee')}: ${money(c.basicPrice)} / ${c.listingDays} ${t('दिन','days')}</strong><p>${esc(c.bankName)} ${esc(c.bankAccount)}</p>${qr?`<img alt="Bank QR" style="width:180px;max-width:100%" src="${esc(qr)}">`:''}<p class="small">${t('बैंक QR बाट भुक्तानी गरेर Transaction Reference र प्रमाणको लिंक राख्नुहोस् ।','Pay via bank QR and provide the transaction reference and proof link.')}</p>`;}
+  catch(err){$('listMsg').textContent=err.message;$('bankInfo').textContent='Could not load payment settings.';}
+}
+function openPost() {
+  $('post').classList.remove('hidden');
+  $('post').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closePost() {
+  $('post').classList.add('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('postNav').addEventListener('click', function (event) {event.preventDefault();openPost();});
+$('postCta').addEventListener('click', openPost);
+$('footerPost').addEventListener('click', function (event) {
+  event.preventDefault();
+  openPost();
+});
+$('closePost').addEventListener('click', closePost);
+document.querySelectorAll('[data-property]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    $('type').value=button.dataset.property;
+    renderListings();
+    $('latestTitle').scrollIntoView({behavior:'smooth'});
+  });
+});
+if (location.hash === '#post') openPost();
+
+function showSiteInfo(config) {
+  const english = localStorage.getItem('nrh_lang') === 'en';
+  $('aboutText').textContent=(english ? config.aboutEn : config.aboutNe) || config.aboutNe || config.aboutEn || '';
+  function show(id, hasValue) {$(id).classList.toggle('hidden', !hasValue);}
+  const phone=String(config.contactPhone || '').trim();
+  const email=String(config.contactEmail || '').trim();
+  const address=String(config.contactAddress || '').trim();
+  const map=safeImage(config.contactLocation || '');
+  const whatsapp=String(config.whatsappNumber || '').replace(/[^\d]/g,'');
+  show('contactPhoneLine',phone);
+  $('contactPhoneLink').textContent=phone;
+  $('contactPhoneLink').href='tel:'+phone.replace(/[^+\d]/g,'');
+  show('contactEmailLine',email);
+  $('contactEmailLink').textContent=email;
+  $('contactEmailLink').href='mailto:'+email;
+  show('contactAddressLine',address);
+  $('contactAddressText').textContent=address;
+  show('contactLocationLine',map);
+  if(map) $('contactLocationLink').href=map;
+  show('contactWhatsappLine',whatsapp);
+  if(whatsapp) $('contactWhatsappLink').href='https://wa.me/'+whatsapp;
+
+  // Reuse the same Google Sheet Settings in the footer.
+  show('footerPhoneLine', phone);
+  $('footerPhoneLink').textContent = phone;
+  $('footerPhoneLink').href = 'tel:' + phone.replace(/[^+\d]/g, '');
+
+  show('footerEmailLine', email);
+  $('footerEmailLink').textContent = email;
+  $('footerEmailLink').href = 'mailto:' + email;
+
+  show('footerAddressLine', address);
+  $('footerAddressText').textContent = address;
+
+  show('footerWhatsappLine', whatsapp);
+  if (whatsapp) $('footerWhatsappLink').href = 'https://wa.me/' + whatsapp;
+
+  show('footerMapLine', map);
+  if (map) $('footerMapLink').href = map;
+}
+
+/* Preview image URLs without uploading or changing Google Apps Script. */
+$('propertyPhotoUrls').addEventListener('input', function () {
+  const urls = this.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).slice(0, 8);
+  const preview = $('photoPreview');
+  preview.replaceChildren();
+  urls.forEach(function (url) {
+    const safe = safeImage(url);
+    if (!safe) return;
+    const image = document.createElement('img');
+    image.src = safe;
+    image.alt = 'सम्पत्ति फोटो Preview';
+    image.loading = 'lazy';
+    image.referrerPolicy = 'no-referrer';
+    preview.append(image);
+  });
+});
+
+function validNepalMobile(value) {
+  return /^(?:\+?977)?9[678]\d{8}$/.test(String(value || '').replace(/[\s-]/g, ''));
+}
+
+function validatePropertyForm(form) {
+  if (!validNepalMobile(form.elements.posterPhone.value) ||
+      !validNepalMobile(form.elements.contactPhone.value)) {
+    return 'कृपया मान्य नेपाली मोबाइल नम्बर राख्नुहोस् ।';
+  }
+  if (Number(form.elements.rent.value) <= 0) {
+    return 'मासिक भाडा शून्यभन्दा बढी हुनुपर्छ ।';
+  }
+  if (window.validateNepalLocation && !window.validateNepalLocation()) {
+    return 'कृपया सही प्रदेश, जिल्ला, पालिका र वडा छान्नुहोस् ।';
+  }
+  const proof = safeImage(form.elements.paymentProofUrl.value);
+  if (!proof) return 'भुक्तानी प्रमाणको मान्य HTTPS लिंक राख्नुहोस् ।';
+  const photoUrls = form.elements.photoUrls.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (photoUrls.some(url => !safeImage(url))) return 'फोटोका सबै लिंक HTTPS हुनुपर्छ ।';
+  return '';
+}
+
+['filterProvince', 'filterDistrict', 'filterMunicipality'].forEach(function (id) {
+  $(id).addEventListener('change', renderListings);
+});
+
+$('propertyForm').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if (window.validateNepalLocation && !window.validateNepalLocation()) {
+    message($('formMsg'), 'कृपया सही प्रदेश, जिल्ला, पालिका र वडा छान्नुहोस् ।', 'notice error');
+    return;
+  }
+  const formError = validatePropertyForm(event.target);
+  if (formError) { message($('formMsg'), formError, 'notice error'); return; }
+  const btn=$('submitBtn');btn.disabled=true;message($('formMsg'),t('पठाउँदैछ...','Submitting...'));
+  try {const p=Object.fromEntries(new FormData(event.target).entries());const r=await post({action:'create',...p});message($('formMsg'),t('सफलतापूर्वक प्राप्त भयो । Listing ID: ','Submitted. Listing ID: ')+r.id+' — '+r.status,'notice success');event.target.reset();
+    $('photoPreview').replaceChildren();
+    if (window.resetNepalLocation) window.resetNepalLocation();}
+  catch(err){message($('formMsg'),err.message,'notice error');}finally{btn.disabled=false;}
+});
+
+/* District name fallback list retained for compatibility with earlier releases. */
+const NEPAL_DISTRICTS = {
+    'कोशी': ['ताप्लेजुङ','पाँचथर','इलाम','झापा','मोरङ','सुनसरी','धनकुटा','तेह्रथुम','संखुवासभा','भोजपुर','खोटाङ','सोलुखुम्बु','ओखलढुङ्गा','उदयपुर'],
+    'मधेश': ['सप्तरी','सिराहा','धनुषा','महोत्तरी','सर्लाही','रौतहट','बारा','पर्सा'],
+    'बागमती': ['दोलखा','रामेछाप','सिन्धुली','काभ्रेपलाञ्चोक','सिन्धुपाल्चोक','रसुवा','नुवाकोट','धादिङ','चितवन','मकवानपुर','भक्तपुर','ललितपुर','काठमाडौं'],
+    'गण्डकी': ['गोरखा','लमजुङ','तनहुँ','कास्की','मनाङ','मुस्ताङ','म्याग्दी','बागलुङ','पर्वत','स्याङ्जा','नवलपुर'],
+    'लुम्बिनी': ['रुपन्देही','कपिलवस्तु','नवलपरासी (बर्दघाट सुस्ता पश्चिम)','पाल्पा','अर्घाखाँची','गुल्मी','रोल्पा','प्युठान','दाङ','बाँके','बर्दिया','रुकुम पूर्व'],
+    'कर्णाली': ['डोल्पा','मुगु','हुम्ला','जुम्ला','कालिकोट','दैलेख','जाजरकोट','सुर्खेत','सल्यान','रुकुम पश्चिम'],
+    'सुदूरपश्चिम': ['बाजुरा','बझाङ','अछाम','डोटी','कैलाली','कञ्चनपुर','डडेल्धुरा','बैतडी','दार्चुला']
+};
+
+function updateDistrictOptions() {
+    const province = document.querySelector('[name="province"]').value;
+    const district = document.getElementById('districtSelect');
+    district.replaceChildren(new Option('जिल्ला छान्नुहोस्', ''));
+    (NEPAL_DISTRICTS[province] || []).forEach(function (name) {
+        district.add(new Option(name, name));
+    });
+    district.disabled = !province;
+}
+
+/* Province/district cascading events are registered in nepal-locations.js. */
+
+$('language').value=localStorage.getItem('nrh_lang')||'ne';
+if(localStorage.getItem('nrh_lang')==='en'){$('headline').textContent='Find rooms, flats, shutters and houses across Nepal';$('subhead').textContent='Search by location and budget • Contact property owners';$('latestTitle').textContent='Available properties';$('postTitle').textContent='Post your rental property';$('searchBtn').textContent='Search';$('submitBtn').textContent='Submit for admin review';}
+load();
+</script>
+</body>
+</html>
