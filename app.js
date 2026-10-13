@@ -30,12 +30,12 @@ function post(payload) {
     let timer;
     function cleanup(){clearTimeout(timer);window.removeEventListener('message',receive);form.remove();frame.remove();}
     function receive(event) {
-      if(event.source!==frame.contentWindow || !event.origin.endsWith('.googleusercontent.com')) return;
+      if(event.source!==frame.contentWindow || !(/^https:\/\/(?:[a-z0-9.-]+\.)?googleusercontent\.com$/i.test(event.origin) || event.origin === 'https://script.google.com')) return;
       if(!event.data || event.data.requestId!==id) return;
       const data=event.data;cleanup();data.ok?resolve(data.data):reject(Error(data.error||'Request failed'));
     }
     window.addEventListener('message',receive);document.body.append(frame,form);
-    timer=setTimeout(()=>{cleanup();reject(Error('Submission timed out. Check the sheet before retrying.'));},30000);
+    timer=setTimeout(()=>{cleanup();reject(Error('Server बाट समयमा जवाफ आएन । Apps Script Deployment र Executions जाँच गर्नुहोस् ।'));},65000);
     form.submit();
   });
 }
