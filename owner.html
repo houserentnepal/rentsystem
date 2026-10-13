@@ -160,6 +160,32 @@
     .owner-auth-split #ownerResetPasswordStep .owner-actions button { width:100%; }
     .owner-auth-split .owner-otp-tools { border-top:1px solid #e5edf6; padding-top:12px; }
     @media (max-width:600px) { .owner-auth-split #ownerDetailsStep, .owner-auth-split #ownerVerificationStep, .owner-auth-split #ownerResetPasswordStep { padding:15px; } .owner-auth-split .owner-auth-step { font-size:10px; } }
+    /* High-contrast recovery link: override generic button opacity/colors. */
+    .owner-auth-split #ownerForgotPrompt #ownerForgotLink,
+    .owner-auth-split #ownerForgotPrompt #ownerForgotLink:link,
+    .owner-auth-split #ownerForgotPrompt #ownerForgotLink:visited {
+      display: inline-flex; align-items: center; justify-content: flex-end;
+      width: auto; max-width: 100%; min-height: 36px;
+      padding: 5px 7px; background: transparent;
+      color: #0754a4 !important; opacity: 1 !important;
+      -webkit-text-fill-color: #0754a4;
+      font-size: 13px; font-weight: 700; line-height: 1.5;
+      text-decoration: underline; text-underline-offset: 3px;
+      cursor: pointer; box-shadow: none; filter: none;
+    }
+    .owner-auth-split #ownerForgotPrompt #ownerForgotLink:hover {
+      color: #003a77 !important; -webkit-text-fill-color: #003a77;
+      background: #e8f2ff; border-radius: 7px;
+    }
+    .owner-auth-split #ownerForgotPrompt #ownerForgotLink:focus-visible {
+      outline: 2px solid #0754a4; outline-offset: 2px;
+    }
+    .owner-auth-split #authMsg.owner-reset-success {
+      display: block; padding: 13px 15px; border: 1px solid #a7d8b4;
+      border-radius: 10px; background: #ecf9ef;
+      color: #14632f !important; font-weight: 700; line-height: 1.6;
+    }
+
   </style>
 </head>
 <body>
@@ -308,6 +334,6 @@
   </main>
   <script src="app.js?v=20261014-reset3"></script>
   <script src="nepal-locations.js"></script>
-  <script src="owner.js?v=20261014-reset3"></script>
+  <script src="owner.js?v=20261014-register-success5"></script>
 </body>
 </html>
