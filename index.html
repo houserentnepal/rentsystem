@@ -8,7 +8,7 @@
 <body>
 <header>
   <div class="brand">🏠 Nepal Rent Hub</div>
-  <nav><a href="index.html">Home</a><a href="#post">Post Property</a><a href="admin.html">Admin</a>
+  <nav><a href="index.html">Home</a><a href="#post" id="postNav">Post Property</a><a href="#contact">Contact</a><a href="admin.html">Admin</a>
     <select class="lang" aria-label="Language" onchange="setLanguage(this.value)" id="language"><option value="ne">नेपाली</option><option value="en">English</option></select>
   </nav>
 </header>
@@ -23,8 +23,19 @@
       <button onclick="renderListings()" id="searchBtn">खोज्नुहोस्</button>
     </div>
   </div>
-  <section><h2 id="latestTitle">उपलब्ध सम्पत्तिहरू</h2><p id="listMsg" class="muted">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
-  <section id="post" class="panel">
+  <section class="category-section">
+    <p class="section-kicker">EXPLORE RENTALS</p>
+    <h2>तपाईंलाई चाहिएको सम्पत्ति छान्नुहोस्</h2>
+    <div class="category-grid">
+      <button type="button" class="category-card" data-property="room"><span>🛏️</span><strong>कोठा / Room</strong></button>
+      <button type="button" class="category-card" data-property="flat"><span>🏢</span><strong>फ्ल्याट / Flat</strong></button>
+      <button type="button" class="category-card" data-property="shutter"><span>🏬</span><strong>सटर / Shutter</strong></button>
+      <button type="button" class="category-card" data-property="house"><span>🏡</span><strong>घर / House</strong></button>
+    </div>
+  </section>
+  <section><div class="section-heading"><div><p class="section-kicker">LATEST LISTINGS</p><h2 id="latestTitle">उपलब्ध सम्पत्तिहरू</h2></div><button type="button" class="fit" id="postCta">+ Post Property</button></div>उपलब्ध सम्पत्तिहरू</h2><p id="listMsg" class="muted">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
+  <section id="post" class="panel hidden" aria-label="Property registration">
+    <div class="section-heading"><h2>Property Registration</h2><button type="button" class="secondary fit" id="closePost">✕ Close</button></div>
     <h2 id="postTitle">सम्पत्ति विज्ञापन पोस्ट गर्नुहोस्</h2>
     <p class="notice" id="policy">सबै विज्ञापन सशुल्क छन् । Bank QR भुक्तानी प्रमाण Admin ले जाँच गरेपछि मात्र पोस्ट स्वीकृति प्रक्रियामा जान्छ ।</p>
     <div id="bankInfo" class="notice">Bank QR विवरण लोड हुँदैछ...</div>
@@ -57,6 +68,16 @@
       <div id="formMsg" style="margin-top:12px" aria-live="polite"></div>
     </form>
   </section>
+  <section id="contact" class="panel about-panel">
+    <div><p class="section-kicker">ABOUT NEPAL RENT HUB</p><h2>हाम्रो बारेमा</h2><p id="aboutText" class="muted">नेपालभर भाडामा उपलब्ध सम्पत्ति खोज्ने तथा विज्ञापन गर्ने प्लेटफर्म ।</p></div>
+    <div><h2>सम्पर्क / Contact</h2><div class="about-links">
+      <p id="contactPhoneLine" class="hidden">☎ <a id="contactPhoneLink"></a></p>
+      <p id="contactEmailLine" class="hidden">✉ <a id="contactEmailLink"></a></p>
+      <p id="contactAddressLine" class="hidden">📍 <span id="contactAddressText"></span></p>
+      <p id="contactLocationLine" class="hidden">🗺 <a id="contactLocationLink" target="_blank" rel="noopener noreferrer">Google Maps</a></p>
+      <p id="contactWhatsappLine" class="hidden">💬 <a id="contactWhatsappLink" target="_blank" rel="noopener noreferrer">WhatsApp</a></p>
+    </div></div>
+  </section>
 </main>
 <footer>© Nepal Rent Hub • Nepal Rental Property Marketplace<br>Designed &amp; Developed by Nirajan Aryal (9851113811)</footer>
 <script src="app.js"></script>
@@ -71,9 +92,52 @@ function renderListings() {
 function showContact(id){const p=allListings.find(x=>x.id===id);if(!p)return;const el=$('contact-'+id);el.textContent='☎ '+p.contactPhone;}
 async function load(){
   if(!API_READY){$('listMsg').textContent='First configure the Apps Script API URL in app.js.';$('bankInfo').textContent='Configure API URL and Bank QR in Google Sheet Settings.';return;}
-  try {const [items,config]=await Promise.all([jsonp('list'),jsonp('config')]);if(!items.ok||!config.ok)throw Error('API error');allListings=items.data;renderListings();const c=config.data;const qr=safeImage(c.bankQrUrl);$('bankInfo').innerHTML=`<strong>${t('विज्ञापन शुल्क','Listing fee')}: ${money(c.basicPrice)} / ${c.listingDays} ${t('दिन','days')}</strong><p>${esc(c.bankName)} ${esc(c.bankAccount)}</p>${qr?`<img alt="Bank QR" style="width:180px;max-width:100%" src="${esc(qr)}">`:''}<p class="small">${t('बैंक QR बाट भुक्तानी गरेर Transaction Reference र प्रमाणको लिंक राख्नुहोस् ।','Pay via bank QR and provide the transaction reference and proof link.')}</p>`;}
+  try {const [items,config]=await Promise.all([jsonp('list'),jsonp('config')]);if(!items.ok||!config.ok)throw Error('API error');allListings=items.data;renderListings();const c=config.data;showSiteInfo(c);const qr=safeImage(c.bankQrUrl);$('bankInfo').innerHTML=`<strong>${t('विज्ञापन शुल्क','Listing fee')}: ${money(c.basicPrice)} / ${c.listingDays} ${t('दिन','days')}</strong><p>${esc(c.bankName)} ${esc(c.bankAccount)}</p>${qr?`<img alt="Bank QR" style="width:180px;max-width:100%" src="${esc(qr)}">`:''}<p class="small">${t('बैंक QR बाट भुक्तानी गरेर Transaction Reference र प्रमाणको लिंक राख्नुहोस् ।','Pay via bank QR and provide the transaction reference and proof link.')}</p>`;}
   catch(err){$('listMsg').textContent=err.message;$('bankInfo').textContent='Could not load payment settings.';}
 }
+function openPost() {
+  $('post').classList.remove('hidden');
+  $('post').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closePost() {
+  $('post').classList.add('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$('postNav').addEventListener('click', function (event) {event.preventDefault();openPost();});
+$('postCta').addEventListener('click', openPost);
+$('closePost').addEventListener('click', closePost);
+document.querySelectorAll('[data-property]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    $('type').value=button.dataset.property;
+    renderListings();
+    $('latestTitle').scrollIntoView({behavior:'smooth'});
+  });
+});
+if (location.hash === '#post') openPost();
+
+function showSiteInfo(config) {
+  const english = localStorage.getItem('nrh_lang') === 'en';
+  $('aboutText').textContent=(english ? config.aboutEn : config.aboutNe) || config.aboutNe || config.aboutEn || '';
+  function show(id, hasValue) {$(id).classList.toggle('hidden', !hasValue);}
+  const phone=String(config.contactPhone || '').trim();
+  const email=String(config.contactEmail || '').trim();
+  const address=String(config.contactAddress || '').trim();
+  const map=safeImage(config.contactLocation || '');
+  const whatsapp=String(config.whatsappNumber || '').replace(/[^\d]/g,'');
+  show('contactPhoneLine',phone);
+  $('contactPhoneLink').textContent=phone;
+  $('contactPhoneLink').href='tel:'+phone.replace(/[^+\d]/g,'');
+  show('contactEmailLine',email);
+  $('contactEmailLink').textContent=email;
+  $('contactEmailLink').href='mailto:'+email;
+  show('contactAddressLine',address);
+  $('contactAddressText').textContent=address;
+  show('contactLocationLine',map);
+  if(map) $('contactLocationLink').href=map;
+  show('contactWhatsappLine',whatsapp);
+  if(whatsapp) $('contactWhatsappLink').href='https://wa.me/'+whatsapp;
+}
+
 $('propertyForm').addEventListener('submit',async event=>{
   event.preventDefault();const btn=$('submitBtn');btn.disabled=true;message($('formMsg'),t('पठाउँदैछ...','Submitting...'));
   try {const p=Object.fromEntries(new FormData(event.target).entries());const r=await post({action:'create',...p});message($('formMsg'),t('सफलतापूर्वक प्राप्त भयो । Listing ID: ','Submitted. Listing ID: ')+r.id+' — '+r.status,'notice success');event.target.reset();}
