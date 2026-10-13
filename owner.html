@@ -114,6 +114,18 @@
       .owner-auth-split .owner-auth-heading, .owner-auth-split .owner-auth-body { padding-left: 13px; padding-right: 13px; }
       .owner-auth-split #ownerDetailsStep, .owner-auth-split #ownerVerificationStep { padding: 14px; }
     }
+    /* Owner property form: photo and private voucher upload (scoped). */
+    .owner-upload-section { margin: 18px 0; padding: 18px; background: #f1f7fe; border: 1px solid #dce8f5; border-radius: 14px; }
+    .owner-upload-section h3 { margin: 0 0 8px; color: #0b477c; }
+    .owner-upload-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+    .owner-upload-card { min-width: 0; padding: 12px; background: white; border: 1px solid #d7e3f0; border-radius: 12px; }
+    .owner-upload-card label { display: block; margin-bottom: 8px; font-weight: 700; }
+    .owner-upload-card input, #ownerPaymentVoucher { width: 100%; max-width: 100%; font-size: 13px; }
+    .owner-upload-preview { display: block; width: 100%; height: 135px; object-fit: cover; border-radius: 8px; margin: 10px 0; }
+    .owner-upload-remove, #ownerVoucherRemove { margin-top: 9px; padding: 7px 12px; font-size: 12px; }
+    .owner-voucher-preview { margin-top: 9px; font-size: 13px; color: #17456c; }
+    #ownerUploadProgress { font-size: 13px; font-weight: 700; color: #176044; }
+    @media (max-width: 680px) { .owner-upload-grid { grid-template-columns: 1fr; } .owner-upload-preview { height: 165px; } }
   </style>
 </head>
 <body>
@@ -207,14 +219,22 @@
             <div class="field"><label>Parking</label><select id="detailParking"><option value="">छान्नुहोस्</option><option>Yes</option><option>No</option></select></div>
           </div>
           <div class="field"><label>विवरण</label><textarea name="description" maxlength="2500"></textarea></div>
-          <div class="field"><label>फोटोको HTTPS Link (Optional)</label><textarea name="photoUrls" placeholder="https://... प्रत्येक लाइनमा एक"></textarea></div>
+          <section class="owner-upload-section" aria-label="सम्पत्तिका फोटो">
+            <h3>📷 सम्पत्तिका फोटो Upload गर्नुहोस्</h3>
+            <p class="owner-auth-help">घरको बाहिरी र कोठा/भित्री फोटो अनिवार्य छन् । तेस्रो फोटो Optional हो ।</p>
+            <div class="owner-upload-grid">
+              <div class="owner-upload-card"><label for="ownerPhotoExterior">घरको बाहिरी फोटो *</label><input id="ownerPhotoExterior" type="file" accept="image/jpeg,image/png,image/webp" required><img id="ownerPreviewExterior" class="owner-upload-preview owner-hidden" alt="घरको फोटो Preview"><button type="button" class="secondary owner-upload-remove" data-clear="ownerPhotoExterior">हटाउनुहोस्</button></div>
+              <div class="owner-upload-card"><label for="ownerPhotoInterior">कोठा / भित्री फोटो *</label><input id="ownerPhotoInterior" type="file" accept="image/jpeg,image/png,image/webp" required><img id="ownerPreviewInterior" class="owner-upload-preview owner-hidden" alt="भित्री फोटो Preview"><button type="button" class="secondary owner-upload-remove" data-clear="ownerPhotoInterior">हटाउनुहोस्</button></div>
+              <div class="owner-upload-card"><label for="ownerPhotoOther">अन्य फोटो (Optional)</label><input id="ownerPhotoOther" type="file" accept="image/jpeg,image/png,image/webp"><img id="ownerPreviewOther" class="owner-upload-preview owner-hidden" alt="अन्य फोटो Preview"><button type="button" class="secondary owner-upload-remove" data-clear="ownerPhotoOther">हटाउनुहोस्</button></div>
+            </div>
+          </section>
           <input type="hidden" name="paymentMethod" value="BANK_QR">
           <div class="two">
             <div class="field"><label>Bank Transaction Reference *</label><input name="paymentReference" required></div>
-            <div class="field"><label>भुक्तानी प्रमाणको HTTPS Link *</label><input name="paymentProofUrl" type="url" required placeholder="https://..."></div>
+            <div class="field"><label for="ownerPaymentVoucher">Bank Voucher / Screenshot Upload *</label><input id="ownerPaymentVoucher" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required><div id="ownerVoucherPreview" class="owner-voucher-preview owner-hidden"></div><button type="button" id="ownerVoucherRemove" class="secondary">Voucher हटाउनुहोस्</button></div>
           </div>
           <div class="owner-actions"><button type="submit" id="ownerSubmit">Admin Review मा पठाउनुहोस्</button><button type="button" class="secondary" id="cancelOwnerPost">Cancel</button></div>
-          <p id="postMsg" role="status"></p>
+          <p id="ownerUploadProgress" role="status" aria-live="polite"></p><p id="postMsg" role="status"></p>
         </form>
       </section>
       <section class="panel owner-form owner-hidden" id="unitPanel">
