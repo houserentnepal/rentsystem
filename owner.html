@@ -147,6 +147,19 @@
     .owner-auth-split .owner-actions button { border-radius: 9px; }
     #ownerResendOtp { min-height: 0; }
     #ownerResetPasswordStep.owner-hidden { display:none; }
+    /* Password recovery: scoped presentation only. */
+    .owner-auth-split .owner-reset-banner { display:flex; align-items:center; gap:12px; padding:13px 15px; margin-bottom:16px; border:1px solid #cfe1f3; background:#eaf4ff; border-radius:12px; color:#123f70; }
+    .owner-auth-split .owner-reset-banner.owner-hidden { display:none !important; }
+    .owner-reset-icon { display:grid; place-items:center; flex:0 0 39px; width:39px; height:39px; border-radius:11px; background:#d5eafa; font-size:20px; }
+    .owner-reset-banner strong, .owner-reset-banner small { display:block; }
+    .owner-reset-banner small { margin-top:3px; color:#4b6885; line-height:1.5; font-size:12px; }
+    .owner-auth-split #ownerDetailsStep, .owner-auth-split #ownerVerificationStep, .owner-auth-split #ownerResetPasswordStep { padding:22px; border-radius:15px; background:#fff; border:1px solid #e0eaf5; }
+    .owner-auth-split .owner-auth-steps { margin:16px 0; }
+    .owner-auth-split .owner-auth-step { white-space:nowrap; }
+    .owner-auth-split #ownerForgotPrompt { text-align:right; }
+    .owner-auth-split #ownerResetPasswordStep .owner-actions button { width:100%; }
+    .owner-auth-split .owner-otp-tools { border-top:1px solid #e5edf6; padding-top:12px; }
+    @media (max-width:600px) { .owner-auth-split #ownerDetailsStep, .owner-auth-split #ownerVerificationStep, .owner-auth-split #ownerResetPasswordStep { padding:15px; } .owner-auth-split .owner-auth-step { font-size:10px; } }
   </style>
 </head>
 <body>
@@ -184,9 +197,12 @@
         <div class="owner-auth-steps" id="ownerProgressSteps" aria-label="Account verification progress">
           <div class="owner-auth-step is-current" id="ownerStepOneLabel"><span class="owner-auth-step-number">1</span> विवरण</div>
           <div class="owner-auth-step-line"></div>
-          <div class="owner-auth-step" id="ownerStepTwoLabel"><span class="owner-auth-step-number">2</span> Email Verification</div>
+          <div class="owner-auth-step" id="ownerStepTwoLabel"><span class="owner-auth-step-number">2</span> OTP Verification</div>
+          <div class="owner-auth-step-line owner-reset-only owner-hidden" id="ownerStepThreeLine"></div>
+          <div class="owner-auth-step owner-reset-only owner-hidden" id="ownerStepThreeLabel"><span class="owner-auth-step-number">3</span> नयाँ Password</div>
         </div>
         <div id="ownerDetailsStep">
+          <div class="owner-reset-banner owner-hidden" id="ownerResetBanner"><span class="owner-reset-icon">🔐</span><div><strong>सुरक्षित Password Recovery</strong><small>पहिले Email पुष्टि गर्नुहोस्, त्यसपछि OTP र नयाँ Password ।</small></div></div>
           <h3 id="ownerDetailsTitle">① आफ्नो Account मा Login गर्नुहोस्</h3>
           <p class="owner-auth-help"><span id="ownerModeHelp">Email र Password राखेर My Properties खोल्नुहोस् ।</span></p>
           <form id="ownerDetailsForm" class="owner-form">
@@ -203,6 +219,7 @@
           </form>
         </div>
         <div id="ownerVerificationStep" class="owner-hidden">
+          <div class="owner-reset-banner owner-hidden" id="ownerOtpBanner"><span class="owner-reset-icon">✉</span><div><strong>Email Verification</strong><small>तपाईंको Email मा आएको ६ अङ्कको Code प्रयोग गर्नुहोस् ।</small></div></div>
           <h3 id="ownerVerificationTitle">② Email Verification</h3>
           <p class="owner-auth-help">तपाईंको <strong id="ownerOtpEmail"></strong> मा पठाइएको ६ अङ्कको OTP राख्नुहोस् ।</p>
           <form id="ownerOtpForm" class="owner-form">
@@ -212,6 +229,7 @@
           <div class="owner-otp-tools"><span>OTP प्राप्त भएन?</span><button type="button" id="ownerResendOtp" class="owner-register-link">नयाँ OTP पठाउनुहोस्</button><span id="ownerResendHint" class="owner-muted"></span></div>
         </div>
         <div id="ownerResetPasswordStep" class="owner-hidden owner-reset-panel">
+          <div class="owner-reset-banner"><span class="owner-reset-icon">✓</span><div><strong>Email प्रमाणित भयो</strong><small>अब नयाँ सुरक्षित Password राख्नुहोस् ।</small></div></div>
           <h3>③ नयाँ Password बनाउनुहोस्</h3>
           <p class="owner-auth-help">Email प्रमाणित भयो । अब सुरक्षित नयाँ Password राख्नुहोस् ।</p>
           <form id="ownerResetPasswordForm" class="owner-form">
@@ -288,8 +306,8 @@
       </section>
     </section>
   </main>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261014-reset3"></script>
   <script src="nepal-locations.js"></script>
-  <script src="owner.js"></script>
+  <script src="owner.js?v=20261014-reset3"></script>
 </body>
 </html>
