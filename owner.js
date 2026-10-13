@@ -71,6 +71,10 @@
     show('ownerConfirmPasswordField', registering);
     show('ownerPasswordField', !resetting);
     show('ownerProgressSteps', registering || resetting);
+    show('ownerStepThreeLine', resetting);
+    show('ownerStepThreeLabel', resetting);
+    show('ownerResetBanner', resetting);
+    show('ownerOtpBanner', false);
     $('ownerName').required = registering;
     $('ownerPhone').required = registering;
     $('ownerConfirmPassword').required = registering;
@@ -107,6 +111,8 @@
     if (!verification) show('ownerResetPasswordStep', false);
     $('ownerStepOneLabel').classList.toggle('is-current', !verification);
     $('ownerStepTwoLabel').classList.toggle('is-current', verification);
+    $('ownerStepThreeLabel').classList.remove('is-current');
+    show('ownerOtpBanner', verification && ownerAuthMode === 'reset');
     if (verification) {
       $('ownerOtpEmail').textContent = $('ownerEmail').value.trim();
       $('ownerOtp').focus();
@@ -185,6 +191,8 @@
           if (!resetToken) throw Error('Reset Verification असफल भयो ।');
           show('ownerVerificationStep', false);
           show('ownerResetPasswordStep', true);
+          $('ownerStepTwoLabel').classList.remove('is-current');
+          $('ownerStepThreeLabel').classList.add('is-current');
           $('ownerNewPassword').focus();
           notice('authMsg', 'OTP प्रमाणित भयो । अब नयाँ Password राख्नुहोस् ।');
           return;
