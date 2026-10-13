@@ -1090,3 +1090,55 @@ header nav a {
     .nrh-footer-inner { grid-template-columns: 1fr 1fr; gap: 14px; }
     .nrh-footer-bottom { flex-direction: column; padding: 12px 14px; }
 }
+
+/* ============================================================
+   Nepal Rent Hub - Hero double-text correction (2026-10-13)
+   The original hero.webp already contains headlines, trust-box
+   and search fields. Do not use it behind real HTML elements.
+   Keep the real, accessible HTML text and search controls.
+   ============================================================ */
+.nrh-main .hero {
+    background-image: linear-gradient(115deg, #092a50 0%, #104c80 65%, #17618f 100%);
+    background-color: #092a50;
+}
+
+/* The supplied footer.webp also has baked-in text. */
+.nrh-footer {
+    background-image: linear-gradient(105deg, #092a50, #104c80);
+    background-color: #092a50;
+}
+
+/* Prevent inherited category span rules from enlarging card labels. */
+.nrh-main .category-card .category-body > span:not(.category-icon) {
+    min-width: 0;
+    flex: 1;
+    font-size: inherit;
+}
+
+.nrh-main .category-card .category-body strong {
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.nrh-main .category-card .category-body small {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.nrh-main .category-card .category-body .category-icon {
+    font-size: 22px;
+}
+
+@media (max-width: 680px) {
+    .nrh-main .category-card .category-body strong {
+        font-size: 12px;
+    }
+
+    .nrh-main .category-card .category-body small {
+        font-size: 10px;
+    }
+
+    .nrh-main .category-card .category-body .category-icon {
+        font-size: 16px;
+    }
+}
