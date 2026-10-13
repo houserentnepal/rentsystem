@@ -5,6 +5,7 @@
   let ownerToken = sessionStorage.getItem('nrh_owner_token') || '';
   let units = [];
   let selectedUnit = null;
+  let ownerAuthMode = 'register';
 
   function show(id, visible) {
     $(id).classList.toggle('owner-hidden', !visible);
@@ -57,6 +58,35 @@
     notice('ownerMsg', 'स्वागत छ, ' + profile.name + ' ।');
   }
 
+  function selectOwnerAuthMode(mode) {
+    ownerAuthMode = mode === 'login' ? 'login' : 'register';
+    const registering = ownerAuthMode === 'register';
+    show('ownerNameField', registering);
+    show('ownerPhoneField', registering);
+    $('ownerName').required = registering;
+    $('ownerPhone').required = registering;
+    $('ownerDetailsTitle').textContent = registering ? '① नयाँ Account बनाउनुहोस्' : '① आफ्नो Account मा Login गर्नुहोस्';
+    $('ownerModeHelp').textContent = registering
+      ? 'नाम, मोबाइल नम्बर र Email भरेर OTP मार्फत Account प्रमाणित गर्नुहोस् ।'
+      : 'पहिले दर्ता गरेको Email राख्नुहोस् । OTP प्रमाणित गरेपछि My Properties खुल्नेछ ।';
+    $('ownerModeRegister').classList.toggle('is-selected', registering);
+    $('ownerModeLogin').classList.toggle('is-selected', !registering);
+    $('ownerModeRegister').setAttribute('aria-pressed', String(registering));
+    $('ownerModeLogin').setAttribute('aria-pressed', String(!registering));
+    $('otpSend').textContent = registering ? '➤ Register गर्न OTP पठाउनुहोस्' : '➤ Login OTP पठाउनुहोस्';
+    $('otpVerify').textContent = registering ? 'Verify & Register →' : 'Verify & Login →';
+    $('ownerOtp').value = '';
+    ownerAuthStep(1);
+    notice('authMsg', '');
+  }
+
+  $('ownerModeRegister').addEventListener('click', function () {
+    selectOwnerAuthMode('register');
+  });
+  $('ownerModeLogin').addEventListener('click', function () {
+    selectOwnerAuthMode('login');
+  });
+
   function ownerAuthStep(step) {
     const verification = step === 2;
     show('ownerDetailsStep', !verification);
@@ -71,7 +101,17 @@
 
   async function sendOwnerOtp() {
     const email = $('ownerEmail').value.trim();
-    const phone = $('ownerPhone').value.trim();
+    const phone = ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : '';
+    if (ownerAuthMode === 'register' && !$('ownerName').value.trim()) {
+      notice('authMsg', 'पूरा नाम भर्नुहोस् ।', true);
+      $('ownerName').focus();
+      return;
+    }
+    if (ownerAuthMode === 'register' && !phone) {
+      notice('authMsg', 'मोबाइल नम्बर भर्नुहोस् ।', true);
+      $('ownerPhone').focus();
+      return;
+    }
     if (!$('ownerEmail').checkValidity()) {
       $('ownerEmail').reportValidity();
       return;
@@ -85,7 +125,7 @@
     await busy(button, async function () {
       try {
         notice('authMsg', 'Email मा OTP पठाइँदैछ...', false);
-        const result = await post({action: 'ownerOtp', email: email});
+        const result = await post({action: 'ownerOtp', email: email, mode: ownerAuthMode, phone: phone});
         ownerAuthStep(2);
         notice('authMsg', result.message || 'OTP पठाइएको छ ।');
       } catch (error) {
@@ -108,8 +148,9 @@
           action: 'ownerVerify',
           email: $('ownerEmail').value.trim(),
           otp: $('ownerOtp').value.trim(),
-          name: $('ownerName').value.trim(),
-          phone: $('ownerPhone').value.trim()
+          mode: ownerAuthMode,
+          name: ownerAuthMode === 'register' ? $('ownerName').value.trim() : '',
+          phone: ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : ''
         });
         ownerToken = result.token;
         sessionStorage.setItem('nrh_owner_token', ownerToken);
@@ -130,7 +171,7 @@
     await busy(button, async function () {
       try {
         notice('authMsg', 'नयाँ OTP पठाइँदैछ...', false);
-        const result = await post({action: 'ownerOtp', email: $('ownerEmail').value.trim()});
+        const result = await post({action: 'ownerOtp', email: $('ownerEmail').value.trim(), mode: ownerAuthMode, phone: ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : ''});
         notice('authMsg', result.message || 'नयाँ OTP पठाइएको छ ।');
       } catch (error) {
         notice('authMsg', error.message, true);
@@ -385,6 +426,7 @@
     });
   });
 
+  selectOwnerAuthMode('register');
   bankInfo();
   if (ownerToken) {
     loadOwner().catch(function () {
