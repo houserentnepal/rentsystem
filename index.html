@@ -41,6 +41,15 @@
 .nrh-photo-remove { margin-top:8px; font-size:12px; padding:6px 10px; }
 @media(max-width:680px) { .nrh-upload-grid { grid-template-columns:1fr; } }
 </style>
+<style>
+/* Direct payment voucher upload: isolated from existing property photo UI. */
+.nrh-voucher-upload { border:1px dashed #9ab4d5; border-radius:12px; padding:14px; background:#f6f9ff; }
+.nrh-voucher-upload input[type=file] { display:block; max-width:100%; }
+.nrh-voucher-preview { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:12px; }
+.nrh-voucher-preview[hidden], .nrh-voucher-preview img[hidden] { display:none; }
+.nrh-voucher-preview img { width:150px; max-height:180px; object-fit:contain; border-radius:8px; }
+.nrh-voucher-preview span { overflow-wrap:anywhere; flex:1; min-width:130px; }
+</style>
 </head>
 <body>
 <header class="nrh-header">
@@ -138,8 +147,18 @@
         <div class="field"><label>Payment Method</label><input name="paymentMethod" value="BANK_QR" readonly></div>
         <div class="field"><label>Bank Transaction Reference *</label><input name="paymentReference" required maxlength="150"></div>
       </div>
-      <div class="field"><label>भुक्तानी प्रमाणको HTTPS URL / Payment proof link *</label><input name="paymentProofUrl" type="url" required placeholder="https://..."></div>
-      <p class="muted small">सम्पत्तिको फोटो सिधै Upload हुन्छ; भुक्तानी प्रमाणको लिंक भने हालको व्यवस्थाअनुसार आवश्यक छ । मोबाइल OTP र eSewa/Khalti API अझै जोडिएको छैन । संवेदनशील परिचयपत्रको लिंक यहाँ नराख्नुहोस् ।</p>
+      <div class="field nrh-voucher-upload">
+        <label for="paymentVoucherFile">भुक्तानी भौचर / Payment Voucher *</label>
+        <p class="muted small">Bank QR बाट भुक्तानी गरेपछि Screenshot वा भौचर छान्नुहोस् । JPG, PNG, WEBP वा PDF (अधिकतम ५ MB) ।</p>
+        <input id="paymentVoucherFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
+        <div id="paymentVoucherPreview" class="nrh-voucher-preview" hidden>
+          <img id="paymentVoucherImage" alt="भुक्तानी भौचर Preview" hidden>
+          <span id="paymentVoucherFilename"></span>
+          <button type="button" id="removePaymentVoucher" class="secondary fit">हटाउनुहोस् / Change</button>
+        </div>
+        <p id="paymentVoucherNote" class="muted small" aria-live="polite">भौचरको Link राख्नुपर्दैन । File सुरक्षित रूपमा Upload हुनेछ ।</p>
+      </div>
+      <p class="muted small">भौचर Upload भएपछि पनि Admin ले बैंकमा रकम प्राप्त भएको पुष्टि गरेपछि मात्र Payment Verified हुन्छ ।</p>
       <button type="submit" id="submitBtn">Admin Review का लागि पठाउनुहोस्</button>
       <div id="formMsg" style="margin-top:12px" aria-live="polite"></div>
       <p class="small muted">एउटै सम्पत्ति पुनः पठाउनुअघि विवरण जाँच गर्नुहोस् । दोहोरो विज्ञापनको अन्तिम जाँच Admin ले गर्नेछ ।</p>
@@ -340,6 +359,60 @@ for (let i = 1; i <= NRH_PHOTO_LIMIT; i++) {
   });
 }
 
+/* Payment voucher: prepare one image or PDF; no user-supplied URLs. */
+let nrhVoucherData = null;
+const nrhVoucherInput = $('paymentVoucherFile');
+const nrhVoucherPreview = $('paymentVoucherPreview');
+const nrhVoucherImage = $('paymentVoucherImage');
+const nrhVoucherNote = $('paymentVoucherNote');
+
+function nrhReadBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(Error('भौचर पढ्न सकिएन ।'));
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+}
+
+nrhVoucherInput.addEventListener('change', async function () {
+  nrhVoucherData = null;
+  nrhVoucherPreview.hidden = true;
+  nrhVoucherImage.hidden = true;
+  nrhVoucherImage.removeAttribute('src');
+  const file = nrhVoucherInput.files[0];
+  if (!file) return;
+  try {
+    if (file.size > 5 * 1024 * 1024) throw Error('भौचर ५ MB भन्दा सानो हुनुपर्छ ।');
+    nrhVoucherNote.textContent = 'भौचर तयार हुँदैछ...';
+    if (file.type === 'application/pdf') {
+      // Keep the transmitted payload small for Google Apps Script form POST.
+      if (file.size > 900000) throw Error('PDF भौचर ९०० KB भन्दा सानो राख्नुहोस् वा Screenshot Upload गर्नुहोस् ।');
+      const base64 = await nrhReadBase64(file);
+      nrhVoucherData = {mimeType:'application/pdf', base64};
+    } else {
+      nrhVoucherData = await nrhPreparePhoto(file);
+      nrhVoucherImage.src = 'data:image/jpeg;base64,' + nrhVoucherData.base64;
+      nrhVoucherImage.hidden = false;
+    }
+    $('paymentVoucherFilename').textContent = file.name;
+    nrhVoucherPreview.hidden = false;
+    nrhVoucherNote.textContent = 'भौचर तयार छ । Submit गर्दा Upload हुनेछ ।';
+  } catch (error) {
+    nrhVoucherInput.value = '';
+    nrhVoucherNote.textContent = error.message;
+  }
+});
+
+$('removePaymentVoucher').addEventListener('click', function () {
+  nrhVoucherInput.value = '';
+  nrhVoucherData = null;
+  nrhVoucherPreview.hidden = true;
+  nrhVoucherImage.hidden = true;
+  nrhVoucherImage.removeAttribute('src');
+  nrhVoucherNote.textContent = 'कृपया नयाँ भौचर छान्नुहोस् ।';
+});
+
 function validNepalMobile(value) {
   return /^(?:\+?977)?9[678]\d{8}$/.test(String(value || '').replace(/[\s-]/g, ''));
 }
@@ -355,8 +428,7 @@ function validatePropertyForm(form) {
   if (window.validateNepalLocation && !window.validateNepalLocation()) {
     return 'कृपया सही प्रदेश, जिल्ला, पालिका र वडा छान्नुहोस् ।';
   }
-  const proof = safeImage(form.elements.paymentProofUrl.value);
-  if (!proof) return 'भुक्तानी प्रमाणको मान्य HTTPS लिंक राख्नुहोस् ।';
+  if (!nrhVoucherData) return 'कृपया भुक्तानी भौचर Upload गर्नुहोस् र तयार नभएसम्म पर्खनुहोस् ।';
   if (!nrhPhotoData[0] || !nrhPhotoData[1]) return 'घर र कोठाको पहिलो दुई फोटो अनिवार्य छन् । फोटो तयार नभएसम्म पर्खनुहोस् ।';
   return '';
 }
@@ -379,8 +451,14 @@ $('propertyForm').addEventListener('submit',async event=>{
       area:$('publicArea').value,bathroom:$('publicBathroom').value,
       kitchen:$('publicKitchen').value,parking:$('publicParking').value});
     p.photoUploads=nrhPhotoData.filter(Boolean);
+    p.paymentVoucherUpload = nrhVoucherData;
     const r=await post({action:'create',...p});message($('formMsg'),t('सफलतापूर्वक प्राप्त भयो । Listing ID: ','Submitted. Listing ID: ')+r.id+' — '+r.status,'notice success');event.target.reset();
     nrhPhotoData.fill(null);
+    nrhVoucherData = null;
+    nrhVoucherPreview.hidden = true;
+    nrhVoucherImage.hidden = true;
+    nrhVoucherImage.removeAttribute('src');
+    nrhVoucherNote.textContent = 'भौचरको Link राख्नुपर्दैन । File सुरक्षित रूपमा Upload हुनेछ ।';
     for (let i = 1; i <= NRH_PHOTO_LIMIT; i++) {
       $('propertyPreview' + i).hidden = true;
       $('propertyPreview' + i).removeAttribute('src');
