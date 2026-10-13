@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ne">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Nepal Rent Hub Admin</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand">🔐 Nepal Rent Hub Admin</div><nav><a href="index.html">Public Website</a></nav></header>
+<main>
+  <div class="panel" id="loginPanel" style="max-width:500px;margin:auto">
+    <h2>Admin Login</h2><p class="muted">Google Apps Script Properties मा राखिएको Admin Password प्रयोग गर्नुहोस् ।</p>
+    <form id="loginForm"><div class="field"><label>Admin Password</label><input type="password" id="password" required autocomplete="current-password"></div><button type="submit" id="loginBtn">Login</button></form>
+    <div id="loginMsg" style="margin-top:12px" aria-live="polite"></div>
+  </div>
+  <div id="dashboard" class="hidden">
+    <div class="actions" style="justify-content:space-between;align-items:center"><h1>Listing Management</h1><button type="button" class="secondary" onclick="logout()">Logout</button></div>
+    <p class="notice">Payment Reference र प्रमाणको लिंक बैंक स्टेटमेन्टसँग जाँच गरेपछि मात्र “Payment Verified” गर्नुहोस् । त्यसपछि विवरण जाँचेर Publish गर्नुहोस् ।</p>
+    <button style="width:auto" onclick="loadAdmin()">Refresh Listings</button><div id="adminMsg" style="margin-top:12px" aria-live="polite"></div>
+    <section class="tablewrap"><table><thead><tr><th>Property</th><th>Poster</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></section>
+  </div>
+</main>
+<script src="app.js"></script>
+<script>
+let token=sessionStorage.getItem('nrh_admin_token')||'';
+function logout(){token='';sessionStorage.removeItem('nrh_admin_token');$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden');}
+async function loadAdmin(){
+  message($('adminMsg'),'Loading...');
+  try{
+    const data=await post({action:'adminList',token});
+    $('adminRows').innerHTML=data.map(r=>`<tr><td><strong>${esc(r.title)}</strong><br><span class="small">${esc(r.district)} • ${money(r.rent)}</span><br><span class="small">${esc(r.id)}</span></td><td>${esc(r.posterName)}<br>${esc(r.posterPhone)}<br>${esc(r.posterRole)}</td><td>${esc(r.paymentMethod)}<br>Ref: ${esc(r.paymentReference)}<br>${safeImage(r.paymentProofUrl)?`<a href="${esc(safeImage(r.paymentProofUrl))}" target="_blank" rel="noopener noreferrer">View Proof</a>`:'No proof'}</td><td><span class="status">${esc(r.status)}</span><br><span class="small">${esc(r.adminNote)}</span></td><td><select id="status-${esc(r.id)}">${['PENDING_PAYMENT_REVIEW','PENDING_APPROVAL','PUBLISHED','REJECTED','RENTED','EXPIRED','SUSPENDED'].map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}</select><input id="note-${esc(r.id)}" placeholder="Admin note" maxlength="500"><button onclick="updateListing('${esc(r.id)}',this)">Save</button></td></tr>`).join('');
+    message($('adminMsg'),`${data.length} listings loaded`,'notice success');
+  }catch(err){message($('adminMsg'),err.message,'notice error');if(err.message.includes('expired'))logout();}
+}
+async function updateListing(id,button){
+  button.disabled=true;
+  try{const status=$('status-'+id).value,note=$('note-'+id).value;
+    if(status==='PENDING_APPROVAL'&&!confirm('Have you verified the payment against the bank statement?'))return;
+    if(status==='PUBLISHED'&&!confirm('Have you reviewed and approved the property listing?'))return;
+    await post({action:'adminUpdate',token,id,status,note});await loadAdmin();
+  }catch(err){message($('adminMsg'),err.message,'notice error');}finally{button.disabled=false;}
+}
+$('loginForm').addEventListener('submit',async event=>{
+  event.preventDefault();$('loginBtn').disabled=true;
+  try{const r=await post({action:'login',password:$('password').value});token=r.token;sessionStorage.setItem('nrh_admin_token',token);$('password').value='';$('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');await loadAdmin();}
+  catch(err){message($('loginMsg'),err.message,'notice error');}finally{$('loginBtn').disabled=false;}
+});
+if(token){$('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadAdmin();}
+</script>
+</body>
+</html>
