@@ -30,6 +30,17 @@
       text-align: left;
     }
   </style>
+<style>
+/* Three-photo upload UI — scoped to the property registration form. */
+.nrh-upload-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:12px; }
+.nrh-upload-card { border:1px dashed #9ab4d5; background:#f6f9ff; border-radius:12px; padding:12px; min-width:0; }
+.nrh-upload-card label { display:block; font-size:14px; font-weight:700; margin-bottom:8px; }
+.nrh-upload-card input[type=file] { display:block; width:100%; font-size:12px; }
+.nrh-upload-card img { display:block; width:100%; height:125px; object-fit:cover; border-radius:8px; margin-top:10px; }
+.nrh-upload-card img[hidden], .nrh-upload-card button[hidden] { display:none; }
+.nrh-photo-remove { margin-top:8px; font-size:12px; padding:6px 10px; }
+@media(max-width:680px) { .nrh-upload-grid { grid-template-columns:1fr; } }
+</style>
 </head>
 <body>
 <header class="nrh-header">
@@ -113,13 +124,22 @@
           <div class="field"><label>Parking</label><select id="publicParking"><option value="">छान्नुहोस्</option><option>Yes</option><option>No</option></select></div>
         </div>
       </div>
-      <div class="field"><label>फोटो URL (प्रत्येक लाइनमा एउटा HTTPS लिंक)</label><textarea name="photoUrls" id="propertyPhotoUrls" placeholder="https://...jpg"></textarea><div id="photoPreview" class="nrh-photo-preview" aria-live="polite"></div></div>
+      <div class="field nrh-photo-upload-section">
+        <label>सम्पत्तिको फोटो अपलोड गर्नुहोस् (अधिकतम ३ फोटो)</label>
+        <p class="muted small">घरको फोटो र कोठाका २ फोटो मोबाइल Camera वा Gallery बाट छान्नुहोस् । JPG, PNG वा WEBP मात्र ।</p>
+        <div class="nrh-upload-grid">
+          <div class="nrh-upload-card"><label for="propertyPhoto1">१. घर / बाहिरी फोटो *</label><input id="propertyPhoto1" type="file" accept="image/jpeg,image/png,image/webp" required><img id="propertyPreview1" alt="घरको फोटो Preview" hidden><button type="button" class="nrh-photo-remove" data-photo="1" hidden>हटाउनुहोस्</button></div>
+          <div class="nrh-upload-card"><label for="propertyPhoto2">२. कोठा / भित्री फोटो *</label><input id="propertyPhoto2" type="file" accept="image/jpeg,image/png,image/webp" required><img id="propertyPreview2" alt="कोठाको फोटो Preview" hidden><button type="button" class="nrh-photo-remove" data-photo="2" hidden>हटाउनुहोस्</button></div>
+          <div class="nrh-upload-card"><label for="propertyPhoto3">३. अर्को फोटो (वैकल्पिक)</label><input id="propertyPhoto3" type="file" accept="image/jpeg,image/png,image/webp"><img id="propertyPreview3" alt="तेस्रो फोटो Preview" hidden><button type="button" class="nrh-photo-remove" data-photo="3" hidden>हटाउनुहोस्</button></div>
+        </div>
+        <p class="muted small" id="photoUploadNote">फोटो स्वतः सानो आकारमा तयार भएर Google Drive मा सुरक्षित हुन्छन् । URL राख्नुपर्दैन ।</p>
+      </div>
       <div class="two">
         <div class="field"><label>Payment Method</label><input name="paymentMethod" value="BANK_QR" readonly></div>
         <div class="field"><label>Bank Transaction Reference *</label><input name="paymentReference" required maxlength="150"></div>
       </div>
       <div class="field"><label>भुक्तानी प्रमाणको HTTPS URL / Payment proof link *</label><input name="paymentProofUrl" type="url" required placeholder="https://..."></div>
-      <p class="muted small">यो MVP मा प्रत्यक्ष फोटो/भौचर Upload, मोबाइल OTP र eSewa/Khalti API अझै जोडिएको छैन । संवेदनशील परिचयपत्रको लिंक यहाँ नराख्नुहोस् ।</p>
+      <p class="muted small">सम्पत्तिको फोटो सिधै Upload हुन्छ; भुक्तानी प्रमाणको लिंक भने हालको व्यवस्थाअनुसार आवश्यक छ । मोबाइल OTP र eSewa/Khalti API अझै जोडिएको छैन । संवेदनशील परिचयपत्रको लिंक यहाँ नराख्नुहोस् ।</p>
       <button type="submit" id="submitBtn">Admin Review का लागि पठाउनुहोस्</button>
       <div id="formMsg" style="margin-top:12px" aria-live="polite"></div>
       <p class="small muted">एउटै सम्पत्ति पुनः पठाउनुअघि विवरण जाँच गर्नुहोस् । दोहोरो विज्ञापनको अन्तिम जाँच Admin ले गर्नेछ ।</p>
@@ -255,22 +275,70 @@ function showSiteInfo(config) {
   if (map) $('footerMapLink').href = map;
 }
 
-/* Preview image URLs without uploading or changing Google Apps Script. */
-$('propertyPhotoUrls').addEventListener('input', function () {
-  const urls = this.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).slice(0, 8);
-  const preview = $('photoPreview');
-  preview.replaceChildren();
-  urls.forEach(function (url) {
-    const safe = safeImage(url);
-    if (!safe) return;
-    const image = document.createElement('img');
-    image.src = safe;
-    image.alt = 'सम्पत्ति फोटो Preview';
-    image.loading = 'lazy';
-    image.referrerPolicy = 'no-referrer';
-    preview.append(image);
+/* Three direct photo uploads: browser preview and compression before submission. */
+const NRH_PHOTO_LIMIT = 3;
+const NRH_PHOTO_MAX_BYTES = 360000;
+const nrhPhotoData = [null, null, null];
+
+async function nrhPreparePhoto(file) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw Error('JPG, PNG वा WEBP फोटो मात्र छान्नुहोस् ।');
+  }
+  if (file.size > 8 * 1024 * 1024) throw Error('फोटो ८ MB भन्दा सानो हुनुपर्छ ।');
+  const image = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, 1280 / Math.max(image.width, image.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw Error('फोटो Process गर्न सकिएन ।');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    let blob;
+    for (const quality of [0.82, 0.68, 0.52, 0.38]) {
+      blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob && blob.size <= NRH_PHOTO_MAX_BYTES) break;
+    }
+    if (!blob || blob.size > NRH_PHOTO_MAX_BYTES) throw Error('फोटोको आकार घटाउन सकिएन । अर्को फोटो छान्नुहोस् ।');
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(Error('फोटो पढ्न सकिएन ।'));
+      reader.onload = () => resolve({mimeType:'image/jpeg', base64:String(reader.result).split(',')[1]});
+      reader.readAsDataURL(blob);
+    });
+  } finally { image.close(); }
+}
+
+for (let i = 1; i <= NRH_PHOTO_LIMIT; i++) {
+  const input = $('propertyPhoto' + i);
+  const preview = $('propertyPreview' + i);
+  const remove = document.querySelector('[data-photo="' + i + '"]');
+  input.addEventListener('change', async function () {
+    nrhPhotoData[i - 1] = null;
+    preview.hidden = true;
+    remove.hidden = true;
+    if (!input.files.length) return;
+    try {
+      $('photoUploadNote').textContent = 'फोटो तयार हुँदैछ...';
+      const data = await nrhPreparePhoto(input.files[0]);
+      nrhPhotoData[i - 1] = data;
+      preview.src = 'data:image/jpeg;base64,' + data.base64;
+      preview.hidden = false;
+      remove.hidden = false;
+      $('photoUploadNote').textContent = 'फोटो तयार छ । Submit गर्दा Google Drive मा Upload हुन्छ ।';
+    } catch (error) {
+      input.value = '';
+      $('photoUploadNote').textContent = error.message;
+    }
   });
-});
+  remove.addEventListener('click', function () {
+    input.value = '';
+    nrhPhotoData[i - 1] = null;
+    preview.removeAttribute('src');
+    preview.hidden = true;
+    remove.hidden = true;
+  });
+}
 
 function validNepalMobile(value) {
   return /^(?:\+?977)?9[678]\d{8}$/.test(String(value || '').replace(/[\s-]/g, ''));
@@ -289,8 +357,7 @@ function validatePropertyForm(form) {
   }
   const proof = safeImage(form.elements.paymentProofUrl.value);
   if (!proof) return 'भुक्तानी प्रमाणको मान्य HTTPS लिंक राख्नुहोस् ।';
-  const photoUrls = form.elements.photoUrls.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  if (photoUrls.some(url => !safeImage(url))) return 'फोटोका सबै लिंक HTTPS हुनुपर्छ ।';
+  if (!nrhPhotoData[0] || !nrhPhotoData[1]) return 'घर र कोठाको पहिलो दुई फोटो अनिवार्य छन् । फोटो तयार नभएसम्म पर्खनुहोस् ।';
   return '';
 }
 
@@ -311,8 +378,15 @@ $('propertyForm').addEventListener('submit',async event=>{
     p.detailsJson=JSON.stringify({unitLabel:$('publicUnitLabel').value,floor:$('publicFloor').value,
       area:$('publicArea').value,bathroom:$('publicBathroom').value,
       kitchen:$('publicKitchen').value,parking:$('publicParking').value});
+    p.photoUploads=nrhPhotoData.filter(Boolean);
     const r=await post({action:'create',...p});message($('formMsg'),t('सफलतापूर्वक प्राप्त भयो । Listing ID: ','Submitted. Listing ID: ')+r.id+' — '+r.status,'notice success');event.target.reset();
-    $('photoPreview').replaceChildren();
+    nrhPhotoData.fill(null);
+    for (let i = 1; i <= NRH_PHOTO_LIMIT; i++) {
+      $('propertyPreview' + i).hidden = true;
+      $('propertyPreview' + i).removeAttribute('src');
+      document.querySelector('[data-photo="' + i + '"]').hidden = true;
+    }
+    $('photoUploadNote').textContent = 'फोटो स्वतः सानो आकारमा तयार भएर Google Drive मा सुरक्षित हुन्छन् ।';
     if (window.resetNepalLocation) window.resetNepalLocation();}
   catch(err){message($('formMsg'),err.message,'notice error');}finally{btn.disabled=false;}
 });
