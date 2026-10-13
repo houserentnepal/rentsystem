@@ -6,35 +6,45 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <div class="brand">🏠 Nepal Rent Hub</div>
-  <nav><a href="index.html">Home</a><a href="#post" id="postNav">Post Property</a><a href="#contact">Contact</a><a href="admin.html">Admin</a>
+<header class="nrh-header">
+  <div class="nrh-header-inner">
+    <a class="brand" href="index.html"><span class="brand-icon">🏠</span><span><strong>Nepal Rent Hub</strong><small>Find Your Perfect Rental Property</small></span></a>
+    <nav class="nrh-nav" aria-label="Main navigation">
+      <a class="active" href="index.html">⌂ Home</a>
+      <a href="#post" id="postNav">⌂ Post Property</a>
+      <a href="#contact">☎ Contact</a>
+      <a href="admin.html">♙ Admin</a>
+    </nav>
     <select class="lang" aria-label="Language" onchange="setLanguage(this.value)" id="language"><option value="ne">नेपाली</option><option value="en">English</option></select>
-  </nav>
-</header>
-<main>
-  <div class="hero">
-    <div class="hero-badge">✦ NEPAL RENTAL MARKETPLACE</div>
-    <h1 id="headline">नेपालभर खाली कोठा, फ्ल्याट, सटर र घर खोज्नुहोस्</h1>
-    <p id="subhead">विश्वसनीय विज्ञापन • स्थान र बजेटअनुसार खोज • घरधनीसँग सम्पर्क</p>
-    <div class="searchbar">
-      <input id="keyword" placeholder="जिल्ला, पालिका वा टोल" aria-label="Location">
-      <select id="type" aria-label="Property type"><option value="">सबै प्रकार / All types</option><option value="room">कोठा / Room</option><option value="flat">फ्ल्याट / Flat</option><option value="shutter">सटर / Shutter</option><option value="house">घर / House</option></select>
-      <input id="maxRent" type="number" min="0" placeholder="अधिकतम भाडा" aria-label="Maximum rent">
-      <button onclick="renderListings()" id="searchBtn">खोज्नुहोस्</button>
-    </div>
   </div>
-  <section class="category-section">
-    <p class="section-kicker">EXPLORE RENTALS</p>
-    <h2>तपाईंलाई चाहिएको सम्पत्ति छान्नुहोस्</h2>
-    <div class="category-grid">
-      <button type="button" class="category-card" data-property="room"><span>🛏️</span><strong>कोठा / Room</strong></button>
-      <button type="button" class="category-card" data-property="flat"><span>🏢</span><strong>फ्ल्याट / Flat</strong></button>
-      <button type="button" class="category-card" data-property="shutter"><span>🏬</span><strong>सटर / Shutter</strong></button>
-      <button type="button" class="category-card" data-property="house"><span>🏡</span><strong>घर / House</strong></button>
+</header>
+<main class="nrh-main">
+  <section class="hero" aria-label="Find rental property">
+    <div class="hero-content">
+      <div class="hero-copy">
+        <h1 id="headline">आफ्नो लागि उपयुक्त<br><em>भाडाको सम्पत्ति</em> खोज्नुहोस्</h1>
+        <h3>Find Your Perfect Rental Property in Nepal</h3>
+        <p id="subhead">कोठा, फ्ल्याट, सटर, घर — सजिलै खोज्नुहोस्, सुरक्षित रूपमा भाडामा लिनुहोस् ।</p>
+      </div>
+      <aside class="hero-trust"><strong>🏠 विश्वासिलो भाडा प्लेटफर्म</strong><span>✓ प्रमाणित सूचीकरण</span><span>✓ वास्तविक जानकारी</span><span>✓ सुरक्षित भुक्तानी प्रक्रिया</span><span>✓ छिटो र सजिलो</span></aside>
+    </div>
+    <div class="searchbar" role="search">
+      <label class="search-field"><span>📍 स्थान / Location</span><input id="keyword" placeholder="जिल्ला, पालिका वा टोल" aria-label="Location"></label>
+      <label class="search-field"><span>🏢 सम्पत्तिको प्रकार</span><select id="type" aria-label="Property type"><option value="">सबै प्रकार / All types</option><option value="room">कोठा / Room</option><option value="flat">फ्ल्याट / Flat</option><option value="shutter">सटर / Shutter</option><option value="house">घर / House</option></select></label>
+      <label class="search-field"><span>💰 अधिकतम मासिक भाडा</span><input id="maxRent" type="number" min="0" placeholder="भाडा दायरा" aria-label="Maximum rent"></label>
+      <button type="button" onclick="renderListings()" id="searchBtn">⌕ खोज्नुहोस्</button>
     </div>
   </section>
-  <section><div class="section-heading"><div><p class="section-kicker">LATEST LISTINGS</p><h2 id="latestTitle">उपलब्ध सम्पत्तिहरू</h2></div><button type="button" class="fit" id="postCta">+ Post Property</button></div><p id="listMsg" class="muted">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
+  <section class="category-section">
+    <div class="nrh-section-title"><h2>सम्पत्तिको प्रकार</h2><p>तपाईंलाई चाहिएको सम्पत्ति छान्नुहोस्</p></div>
+    <div class="category-grid">
+      <button type="button" class="category-card" data-property="room"><img src="room.webp" alt="कोठा" loading="lazy"><span class="category-body"><span class="category-icon room-icon">▣</span><span><strong>कोठा / Room</strong><small>भाडामा कोठा खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="flat"><img src="flat.webp" alt="फ्ल्याट" loading="lazy"><span class="category-body"><span class="category-icon flat-icon">▦</span><span><strong>फ्ल्याट / Flat</strong><small>भाडामा फ्ल्याट खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="shutter"><img src="shutter.webp" alt="सटर" loading="lazy"><span class="category-body"><span class="category-icon shutter-icon">▤</span><span><strong>सटर / Shutter</strong><small>भाडामा सटर खोज्नुहोस्</small></span><b>➜</b></span></button>
+      <button type="button" class="category-card" data-property="house"><img src="house.webp" alt="घर" loading="lazy"><span class="category-body"><span class="category-icon house-icon">⌂</span><span><strong>घर / House</strong><small>भाडामा घर खोज्नुहोस्</small></span><b>➜</b></span></button>
+    </div>
+  </section>
+  <section class="latest-section"><div class="section-heading"><div><h2 id="latestTitle">नवीनतम सम्पत्तिहरू</h2><p class="muted">हाल उपलब्ध भएका सम्पत्तिहरू</p></div><button type="button" class="fit" id="postCta">＋ सम्पत्ति पोस्ट गर्नुहोस्</button></div><p id="listMsg" class="muted" aria-live="polite">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
   <section id="post" class="panel hidden" aria-label="Property registration">
     <div class="section-heading"><h2>सम्पत्ति विज्ञापन दर्ता / Post Property</h2><button type="button" class="secondary fit" id="closePost">✕ Close</button></div>
     <h2 id="postTitle">सम्पत्ति विज्ञापन पोस्ट गर्नुहोस्</h2>
@@ -84,7 +94,7 @@
     </div></div>
   </section>
 </main>
-<footer>© Nepal Rent Hub • Nepal Rental Property Marketplace<br>Designed &amp; Developed by Nirajan Aryal (9851113811)</footer>
+<footer class="nrh-footer"><div class="nrh-footer-inner"><div><h3>🏠 Nepal Rent Hub</h3><p>Find Your Perfect Rental Property</p><p>नेपालभर भाडाको सम्पत्ति खोज्ने प्लेटफर्म ।</p></div><div><h3>सम्पर्क जानकारी</h3><p>सम्पर्क र ठेगाना माथिको Contact Section मा Google Sheet बाट उपलब्ध छन् ।</p></div><div><h3>द्रुत लिङ्कहरू</h3><p><a href="index.html">Home</a> · <a href="#post" id="footerPost">Post Property</a></p><p><a href="#contact">Contact</a> · <a href="admin.html">Admin</a></p></div><div><h3>हाम्रो बारेमा</h3><p>कोठा, फ्ल्याट, सटर र घरको जानकारी दिने डिजिटल प्लेटफर्म ।</p></div></div><div class="nrh-footer-bottom"><span>© 2026 Nepal Rent Hub. All Rights Reserved.</span><span>Designed &amp; Developed by Nirajan Aryal (9851113811)</span></div></footer>
 <script src="app.js"></script>
 <script>
 let allListings=[];
@@ -110,6 +120,10 @@ function closePost() {
 }
 $('postNav').addEventListener('click', function (event) {event.preventDefault();openPost();});
 $('postCta').addEventListener('click', openPost);
+$('footerPost').addEventListener('click', function (event) {
+  event.preventDefault();
+  openPost();
+});
 $('closePost').addEventListener('click', closePost);
 document.querySelectorAll('[data-property]').forEach(function (button) {
   button.addEventListener('click', function () {
