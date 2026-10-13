@@ -170,26 +170,29 @@
           <button type="button" id="ownerModeLogin" class="is-selected" aria-pressed="true">↪ Login गर्नुहोस्</button>
           <button type="button" id="ownerModeRegister" aria-pressed="false">＋ नयाँ Account (Register)</button>
         </div>
-        <div class="owner-auth-steps" aria-label="Registration progress">
+        <div class="owner-auth-steps" aria-label="Account verification progress">
           <div class="owner-auth-step is-current" id="ownerStepOneLabel"><span class="owner-auth-step-number">1</span> विवरण</div>
           <div class="owner-auth-step-line"></div>
           <div class="owner-auth-step" id="ownerStepTwoLabel"><span class="owner-auth-step-number">2</span> Email Verification</div>
         </div>
         <div id="ownerDetailsStep">
           <h3 id="ownerDetailsTitle">① आफ्नो Account मा Login गर्नुहोस्</h3>
-          <p class="owner-auth-help"><span id="ownerModeHelp">पहिले दर्ता गरेको Email राख्नुहोस् । OTP प्रमाणित गरेपछि My Properties खुल्नेछ ।</span></p>
+          <p class="owner-auth-help"><span id="ownerModeHelp">Email र Password राखेर My Properties खोल्नुहोस् ।</span></p>
           <form id="ownerDetailsForm" class="owner-form">
             <div class="two">
               <div class="field" id="ownerNameField"><label for="ownerName">पूरा नाम *</label><input id="ownerName" maxlength="100" autocomplete="name" placeholder="आफ्नो पूरा नाम"></div>
               <div class="field" id="ownerPhoneField"><label for="ownerPhone">मोबाइल नम्बर *</label><input id="ownerPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="98XXXXXXXX"></div>
               <div class="field"><label for="ownerEmail">Email Address *</label><input type="email" id="ownerEmail" required autocomplete="email" placeholder="you@example.com"></div>
+              <div class="field" id="ownerPasswordField"><label for="ownerPassword">Password *</label><input type="password" id="ownerPassword" minlength="12" maxlength="128" autocomplete="current-password" placeholder="Password"></div>
+              <div class="field owner-hidden" id="ownerConfirmPasswordField"><label for="ownerConfirmPassword">Confirm Password *</label><input type="password" id="ownerConfirmPassword" minlength="12" maxlength="128" autocomplete="new-password" placeholder="फेरि Password राख्नुहोस्"></div>
             </div>
-            <div class="owner-actions"><button type="submit" id="otpSend">➤ Login OTP पठाउनुहोस्</button></div>
+            <div class="owner-actions"><button type="submit" id="otpSend">➤ Login गर्नुहोस्</button></div>
+            <p class="owner-auth-help" id="ownerForgotPrompt"><button type="button" id="ownerForgotLink" class="owner-register-link">Password बिर्सनुभयो? OTP बाट Reset गर्नुहोस् →</button></p>
             <p class="owner-register-prompt" id="ownerRegisterPrompt">Account छैन? <button type="button" id="ownerRegisterLink" class="owner-register-link">नयाँ Account बनाउनुहोस् →</button></p>
           </form>
         </div>
         <div id="ownerVerificationStep" class="owner-hidden">
-          <h3>② Email Verification (OTP)</h3>
+          <h3>② Email Verification / Password Reset (OTP)</h3>
           <p class="owner-auth-help">तपाईंको <strong id="ownerOtpEmail"></strong> मा पठाइएको ६ अङ्कको OTP राख्नुहोस् ।</p>
           <form id="ownerOtpForm" class="owner-form">
             <div class="field"><label for="ownerOtp">६ अङ्कको OTP *</label><input id="ownerOtp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="••••••" required></div>
