@@ -5,7 +5,7 @@
   let ownerToken = sessionStorage.getItem('nrh_owner_token') || '';
   let units = [];
   let selectedUnit = null;
-  let ownerAuthMode = 'register';
+  let ownerAuthMode = 'login';
 
   function show(id, visible) {
     $(id).classList.toggle('owner-hidden', !visible);
@@ -63,6 +63,7 @@
     const registering = ownerAuthMode === 'register';
     show('ownerNameField', registering);
     show('ownerPhoneField', registering);
+    show('ownerRegisterPrompt', !registering);
     $('ownerName').required = registering;
     $('ownerPhone').required = registering;
     $('ownerDetailsTitle').textContent = registering ? '① नयाँ Account बनाउनुहोस्' : '① आफ्नो Account मा Login गर्नुहोस्';
@@ -85,6 +86,9 @@
   });
   $('ownerModeLogin').addEventListener('click', function () {
     selectOwnerAuthMode('login');
+  });
+  $('ownerRegisterLink').addEventListener('click', function () {
+    selectOwnerAuthMode('register');
   });
 
   function ownerAuthStep(step) {
@@ -426,7 +430,7 @@
     });
   });
 
-  selectOwnerAuthMode('register');
+  selectOwnerAuthMode('login');
   bankInfo();
   if (ownerToken) {
     loadOwner().catch(function () {
