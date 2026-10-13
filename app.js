@@ -1,5 +1,5 @@
 /* Nepal Rent Hub - shared browser client. Replace API_URL below after deployment. */
-const API_URL = 'PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzRabcR_bQqWWC-aN_6TfWnQaHahYwgIqx3heIpnQItUDbWEz13RTC2parJrM8fh3DV/exec';
 const API_READY = API_URL.startsWith('https://script.google.com/macros/s/');
 const $ = (id) => document.getElementById(id);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
