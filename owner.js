@@ -169,6 +169,88 @@
     } catch (error) { $('ownerBankInfo').textContent = 'Bank Settings लोड भएन ।'; }
   }
 
+  // Keep payload within Apps Script form transport limits: images become JPEG <= 390 KB.
+  async function ownerPhotoData(file) {
+    if (!file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      throw Error('JPG, PNG वा WEBP फोटो मात्र Upload गर्नुहोस् ।');
+    }
+    if (file.size > 8 * 1024 * 1024) throw Error('फोटो ८ MB भन्दा ठूलो हुनु हुँदैन ।');
+    const bitmap = await createImageBitmap(file);
+    try {
+      const ratio = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
+      canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      for (const quality of [0.78, 0.62, 0.46, 0.32]) {
+        const base64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
+        if (base64.length <= 520000) return {mimeType: 'image/jpeg', base64: base64};
+      }
+      throw Error('फोटो धेरै ठूलो छ । अर्को फोटो छान्नुहोस् ।');
+    } finally {
+      if (bitmap.close) bitmap.close();
+    }
+  }
+
+  async function ownerVoucherData(file) {
+    if (!file) throw Error('Bank Voucher Upload गर्नुहोस् ।');
+    if (file.type === 'application/pdf') {
+      if (file.size > 950000) throw Error('PDF Voucher ९५० KB भन्दा सानो हुनुपर्छ ।');
+      return {mimeType: 'application/pdf', base64: await ownerReadBase64(file)};
+    }
+    const photo = await ownerPhotoData(file);
+    if (photo.base64.length > 1260000) throw Error('Voucher धेरै ठूलो छ ।');
+    return photo;
+  }
+
+  function ownerReadBase64(file) {
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function () { resolve(String(reader.result).split(',')[1]); };
+      reader.onerror = function () { reject(Error('File पढ्न सकिएन ।')); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const ownerPreviewIds = {
+    ownerPhotoExterior: 'ownerPreviewExterior',
+    ownerPhotoInterior: 'ownerPreviewInterior',
+    ownerPhotoOther: 'ownerPreviewOther'
+  };
+  Object.keys(ownerPreviewIds).forEach(function (id) {
+    $(id).addEventListener('change', function () {
+      const img = $(ownerPreviewIds[id]);
+      if (img.dataset.previewUrl) URL.revokeObjectURL(img.dataset.previewUrl);
+      img.removeAttribute('src');
+      img.classList.add('owner-hidden');
+      if (this.files[0]) {
+        img.dataset.previewUrl = URL.createObjectURL(this.files[0]);
+        img.src = img.dataset.previewUrl;
+        img.classList.remove('owner-hidden');
+      }
+    });
+  });
+  document.querySelectorAll('.owner-upload-remove').forEach(function (button) {
+    button.addEventListener('click', function () {
+      const input = $(button.dataset.clear);
+      input.value = '';
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+  $('ownerPaymentVoucher').addEventListener('change', function () {
+    const box = $('ownerVoucherPreview');
+    const file = this.files[0];
+    box.textContent = file ? 'छानिएको Voucher: ' + file.name : '';
+    box.classList.toggle('owner-hidden', !file);
+  });
+  $('ownerVoucherRemove').addEventListener('click', function () {
+    $('ownerPaymentVoucher').value = '';
+    $('ownerPaymentVoucher').dispatchEvent(new Event('change'));
+  });
+
   $('propertyForm').addEventListener('submit', function (event) {
     event.preventDefault();
     const form = this;
@@ -183,10 +265,27 @@
           bathroom: $('detailBath').value, kitchen: $('detailKitchen').value,
           parking: $('detailParking').value
         });
-        if (!safeImage(payload.paymentProofUrl)) throw Error('HTTPS Payment Proof Link आवश्यक छ ।');
+        const progress = $('ownerUploadProgress');
+        const exterior = $('ownerPhotoExterior').files[0];
+        const interior = $('ownerPhotoInterior').files[0];
+        const other = $('ownerPhotoOther').files[0];
+        if (!exterior || !interior) throw Error('घरको बाहिरी र कोठाको भित्री फोटो अनिवार्य छन् ।');
+        progress.textContent = 'सम्पत्तिका फोटो तयार गरिँदैछन्...';
+        payload.photoUploads = [];
+        for (const file of [exterior, interior, other].filter(Boolean)) {
+          payload.photoUploads.push(await ownerPhotoData(file));
+        }
+        progress.textContent = 'Bank Voucher तयार गरिँदैछ...';
+        payload.paymentVoucherUpload = await ownerVoucherData($('ownerPaymentVoucher').files[0]);
+        delete payload.photoUrls;
+        delete payload.paymentProofUrl;
+        progress.textContent = 'फोटो र Voucher सहित Admin Review मा पठाइँदैछ...';
         const result = await ownerPost(Object.assign({action: 'ownerCreate'}, payload));
         notice('postMsg', 'विज्ञापन प्राप्त भयो । Unit ID: ' + result.unitId + ' — ' + result.status);
         form.reset();
+        Object.keys(ownerPreviewIds).forEach(function (id) { $(id).dispatchEvent(new Event('change')); });
+        $('ownerPaymentVoucher').dispatchEvent(new Event('change'));
+        $('ownerUploadProgress').textContent = '';
         if (window.resetNepalLocation) window.resetNepalLocation();
         await loadOwner();
         show('ownerPostPanel', false);
