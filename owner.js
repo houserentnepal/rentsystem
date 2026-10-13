@@ -59,37 +59,39 @@
   }
 
   function selectOwnerAuthMode(mode) {
-    ownerAuthMode = mode === 'login' ? 'login' : 'register';
+    ownerAuthMode = ['login', 'register', 'reset'].includes(mode) ? mode : 'login';
     const registering = ownerAuthMode === 'register';
+    const resetting = ownerAuthMode === 'reset';
     show('ownerNameField', registering);
     show('ownerPhoneField', registering);
     show('ownerRegisterPrompt', !registering);
+    show('ownerForgotPrompt', !registering && !resetting);
+    show('ownerConfirmPasswordField', registering || resetting);
     $('ownerName').required = registering;
     $('ownerPhone').required = registering;
-    $('ownerDetailsTitle').textContent = registering ? '① नयाँ Account बनाउनुहोस्' : '① आफ्नो Account मा Login गर्नुहोस्';
+    $('ownerConfirmPassword').required = registering || resetting;
+    $('ownerPassword').required = true;
+    $('ownerPassword').setAttribute('autocomplete', registering || resetting ? 'new-password' : 'current-password');
+    $('ownerDetailsTitle').textContent = registering ? '① नयाँ Account बनाउनुहोस्' : resetting ? '① Password Reset गर्नुहोस्' : '① आफ्नो Account मा Login गर्नुहोस्';
     $('ownerModeHelp').textContent = registering
-      ? 'नाम, मोबाइल नम्बर र Email भरेर OTP मार्फत Account प्रमाणित गर्नुहोस् ।'
-      : 'पहिले दर्ता गरेको Email राख्नुहोस् । OTP प्रमाणित गरेपछि My Properties खुल्नेछ ।';
+      ? 'नाम, मोबाइल, Email र नयाँ Password राख्नुहोस् । OTP Verify भएपछि Account बन्नेछ ।'
+      : resetting ? 'दर्ता भएको Email र नयाँ Password राख्नुहोस् । OTP Verify भएपछि Password परिवर्तन हुनेछ ।'
+      : 'दर्ता भएको Email र Password राखेर My Properties खोल्नुहोस् ।';
     $('ownerModeRegister').classList.toggle('is-selected', registering);
     $('ownerModeLogin').classList.toggle('is-selected', !registering);
     $('ownerModeRegister').setAttribute('aria-pressed', String(registering));
     $('ownerModeLogin').setAttribute('aria-pressed', String(!registering));
-    $('otpSend').textContent = registering ? '➤ Register गर्न OTP पठाउनुहोस्' : '➤ Login OTP पठाउनुहोस्';
-    $('otpVerify').textContent = registering ? 'Verify & Register →' : 'Verify & Login →';
+    $('otpSend').textContent = registering ? '➤ Register गर्न OTP पठाउनुहोस्' : resetting ? '➤ Reset OTP पठाउनुहोस्' : '➤ Login गर्नुहोस्';
+    $('otpVerify').textContent = registering ? 'Verify & Register →' : 'Verify & Reset Password →';
     $('ownerOtp').value = '';
     ownerAuthStep(1);
     notice('authMsg', '');
   }
 
-  $('ownerModeRegister').addEventListener('click', function () {
-    selectOwnerAuthMode('register');
-  });
-  $('ownerModeLogin').addEventListener('click', function () {
-    selectOwnerAuthMode('login');
-  });
-  $('ownerRegisterLink').addEventListener('click', function () {
-    selectOwnerAuthMode('register');
-  });
+  $('ownerModeRegister').addEventListener('click', function () { selectOwnerAuthMode('register'); });
+  $('ownerModeLogin').addEventListener('click', function () { selectOwnerAuthMode('login'); });
+  $('ownerRegisterLink').addEventListener('click', function () { selectOwnerAuthMode('register'); });
+  $('ownerForgotLink').addEventListener('click', function () { selectOwnerAuthMode('reset'); });
 
   function ownerAuthStep(step) {
     const verification = step === 2;
@@ -103,28 +105,31 @@
     }
   }
 
+  function ownerPasswordValid() {
+    const password = $('ownerPassword').value;
+    if (password.length < 12 || password.length > 128 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      notice('authMsg', 'Password १२–१२८ अक्षरको र कम्तीमा एउटा अक्षर तथा एउटा अंक भएको हुनुपर्छ ।', true);
+      return false;
+    }
+    if (password !== $('ownerConfirmPassword').value) {
+      notice('authMsg', 'Password र Confirm Password मिलेन ।', true);
+      return false;
+    }
+    return true;
+  }
+
   async function sendOwnerOtp() {
     const email = $('ownerEmail').value.trim();
     const phone = ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : '';
     if (ownerAuthMode === 'register' && !$('ownerName').value.trim()) {
       notice('authMsg', 'पूरा नाम भर्नुहोस् ।', true);
-      $('ownerName').focus();
-      return;
-    }
-    if (ownerAuthMode === 'register' && !phone) {
-      notice('authMsg', 'मोबाइल नम्बर भर्नुहोस् ।', true);
-      $('ownerPhone').focus();
-      return;
-    }
-    if (!$('ownerEmail').checkValidity()) {
-      $('ownerEmail').reportValidity();
       return;
     }
     if (phone && !/^(?:97|98)\d{8}$/.test(phone)) {
-      notice('authMsg', 'मोबाइल नम्बर ९७ वा ९८ बाट सुरु हुने १० अङ्कको राख्नुहोस् ।', true);
-      $('ownerPhone').focus();
+      notice('authMsg', 'सही १० अङ्कको मोबाइल नम्बर राख्नुहोस् ।', true);
       return;
     }
+    if (!ownerPasswordValid()) return;
     const button = $('otpSend');
     await busy(button, async function () {
       try {
@@ -140,13 +145,22 @@
 
   $('ownerDetailsForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    sendOwnerOtp();
+    if (ownerAuthMode === 'login') {
+      busy($('otpSend'), async function () {
+        try {
+          notice('authMsg', 'Login जाँच हुँदैछ...', false);
+          const result = await post({action: 'ownerPasswordLogin', email: $('ownerEmail').value.trim(), password: $('ownerPassword').value});
+          ownerToken = result.token;
+          sessionStorage.setItem('nrh_owner_token', ownerToken);
+          await loadOwner();
+        } catch (error) { notice('authMsg', error.message, true); }
+      });
+    } else sendOwnerOtp();
   });
 
   $('ownerOtpForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    const button = $('otpVerify');
-    busy(button, async function () {
+    busy($('otpVerify'), async function () {
       try {
         const result = await post({
           action: 'ownerVerify',
@@ -154,14 +168,15 @@
           otp: $('ownerOtp').value.trim(),
           mode: ownerAuthMode,
           name: ownerAuthMode === 'register' ? $('ownerName').value.trim() : '',
-          phone: ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : ''
+          phone: ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : '',
+          password: $('ownerPassword').value
         });
+        $('ownerPassword').value = '';
+        $('ownerConfirmPassword').value = '';
         ownerToken = result.token;
         sessionStorage.setItem('nrh_owner_token', ownerToken);
         await loadOwner();
-      } catch (error) {
-        notice('authMsg', error.message, true);
-      }
+      } catch (error) { notice('authMsg', error.message, true); }
     });
   });
 
@@ -177,18 +192,17 @@
         notice('authMsg', 'नयाँ OTP पठाइँदैछ...', false);
         const result = await post({action: 'ownerOtp', email: $('ownerEmail').value.trim(), mode: ownerAuthMode, phone: ownerAuthMode === 'register' ? $('ownerPhone').value.trim() : ''});
         notice('authMsg', result.message || 'नयाँ OTP पठाइएको छ ।');
-      } catch (error) {
-        notice('authMsg', error.message, true);
-      }
+      } catch (error) { notice('authMsg', error.message, true); }
     });
   });
 
   $('ownerLogout').addEventListener('click', function () {
     ownerToken = '';
     sessionStorage.removeItem('nrh_owner_token');
+    $('ownerPassword').value = '';
     show('ownerLogin', true);
     show('ownerDashboard', false);
-    ownerAuthStep(1);
+    selectOwnerAuthMode('login');
   });
 
   $('refreshOwner').addEventListener('click', async function () {
