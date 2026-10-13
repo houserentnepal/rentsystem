@@ -96,6 +96,7 @@
     show('ownerResetPasswordStep', false);
     $('ownerOtp').value = '';
     ownerAuthStep(1);
+    $('authMsg').classList.remove('owner-reset-success');
     notice('authMsg', '');
   }
 
@@ -197,6 +198,21 @@
           notice('authMsg', 'OTP प्रमाणित भयो । अब नयाँ Password राख्नुहोस् ।');
           return;
         }
+        if (ownerAuthMode === 'register') {
+          // Registration succeeded only after the backend verified the OTP.
+          // Do not automatically sign in: show a confirmation and the Login form.
+          const registeredEmail = $('ownerEmail').value.trim();
+          $('ownerPassword').value = '';
+          $('ownerConfirmPassword').value = '';
+          ownerToken = '';
+          sessionStorage.removeItem('nrh_owner_token');
+          selectOwnerAuthMode('login');
+          $('ownerEmail').value = registeredEmail;
+          $('authMsg').classList.add('owner-reset-success');
+          notice('authMsg', '✓ Account सफलतापूर्वक सिर्जना भयो ! तपाईंको Email प्रमाणित भएको छ । अब आफ्नो Email र Password प्रयोग गरी Login गर्नुहोस् ।');
+          $('ownerPassword').focus();
+          return;
+        }
         $('ownerPassword').value = '';
         $('ownerConfirmPassword').value = '';
         ownerToken = result.token;
@@ -223,9 +239,18 @@
         resetToken = '';
         $('ownerNewPassword').value = '';
         $('ownerNewConfirmPassword').value = '';
-        ownerToken = result.token;
-        sessionStorage.setItem('nrh_owner_token', ownerToken);
-        await loadOwner();
+        // Password reset is complete. Return to Login; never auto-sign-in
+        // with a recovery token or persist a session from this flow.
+        ownerToken = '';
+        sessionStorage.removeItem('nrh_owner_token');
+        const recoveredEmail = $('ownerEmail').value.trim();
+        selectOwnerAuthMode('login');
+        $('ownerEmail').value = recoveredEmail;
+        $('ownerPassword').value = '';
+        const message = $('authMsg');
+        message.classList.add('owner-reset-success');
+        notice('authMsg', '✓ Password सफलतापूर्वक परिवर्तन भयो । अब नयाँ Password प्रयोग गरेर Login गर्नुहोस् ।');
+        $('ownerPassword').focus();
       } catch (error) { notice('authMsg', error.message, true); }
     });
   });
