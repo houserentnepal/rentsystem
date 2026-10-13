@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ne">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nepal Rent Hub | Admin Console</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+  <header><div class="brand">🏠 Nepal Rent Hub <span class="admin-mark">ADMIN CONSOLE</span></div><nav><a href="index.html">↗ सार्वजनिक वेबसाइट</a></nav></header>
+  <main>
+    <section class="panel login-card" id="loginPanel">
+      <div class="auth-eyebrow">NEPAL RENT HUB · ADMINISTRATION</div>
+      <div class="login-icon">🔐</div>
+      <h1>Welcome Back</h1>
+      <p class="muted auth-subtitle">प्रशासनिक खातामा सुरक्षित रूपमा प्रवेश गर्नुहोस् ।</p>
+
+      <form id="loginForm">
+        <div class="field"><label for="username">Username</label><input id="username" required autocomplete="username" placeholder="Admin username"></div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-field">
+            <input type="password" id="password" required autocomplete="current-password" placeholder="Password">
+            <button type="button" id="togglePassword" class="password-eye" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+        </div>
+        <button id="loginBtn" type="submit">सुरक्षित Login गर्नुहोस् →</button>
+      </form>
+      <button type="button" class="forgot-link" id="forgotToggle">🔑 Forgot Password? / पासवर्ड बिर्सनुभयो?</button>
+      <div id="loginMsg" aria-live="polite"></div>
+      <div id="resetPanel" class="hidden reset-panel">
+        <div class="reset-header">
+          <span class="reset-symbol">✉</span>
+          <div>
+            <h2>Reset Password</h2>
+            <p class="muted small">दर्ता भएको Gmail मा प्राप्त OTP Verify गर्नुहोस् ।</p>
+          </div>
+        </div>
+        <div class="reset-progress" aria-label="Reset steps">
+          <span id="resetStep1" class="current">1 · Gmail OTP</span>
+          <span id="resetStep2">2 · Verify</span>
+          <span id="resetStep3">3 · New Password</span>
+        </div>
+        <form id="resetRequestForm">
+          <div class="field"><label for="resetUsername">Username</label><input id="resetUsername" required></div>
+          <button id="sendOtpBtn" type="submit">✉ Gmail मा OTP पठाउनुहोस्</button>
+        </form>
+        <form id="resetVerifyForm" class="hidden">
+          <div class="field"><label for="resetOtp">६ अङ्कको OTP</label><input id="resetOtp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required></div>
+          <button id="verifyOtpBtn" type="submit">OTP Verify गर्नुहोस् →</button>
+        </form>
+        <form id="resetPasswordForm" class="hidden">
+          <div class="field"><label for="newPassword">नयाँ Password</label><input id="newPassword" type="password" minlength="8" required></div>
+          <div class="field"><label for="confirmPassword">Confirm Password</label><input id="confirmPassword" type="password" minlength="8" required></div>
+          <button id="resetPasswordBtn" type="submit">Password परिवर्तन गर्नुहोस्</button>
+        </form>
+        <div id="resetMsg" aria-live="polite"></div>
+      </div>
+    </section>
+    <div id="dashboard" class="hidden">
+      <div class="admin-top"><div><p class="eyebrow">MANAGEMENT CONSOLE</p><h1>Admin Dashboard</h1><p class="muted" id="welcome">सम्पत्ति तथा विज्ञापन व्यवस्थापन</p></div><button class="secondary" type="button" onclick="logout()">Logout ↗</button></div>
+      <div class="stats-grid" id="stats"></div>
+      <div class="tabs"><button type="button" class="tab active" data-tab="listings">📋 Listings</button><button type="button" class="tab" data-tab="settings">⚙️ Site Settings</button><button type="button" class="tab" data-tab="accounts">👥 Admin Accounts</button></div>
+      <section id="tab-listings" class="panel tab-panel">
+        <div class="section-heading"><div><h2>Listing Management</h2><p class="muted small">बैंक स्टेटमेन्टसँग भुक्तानी पुष्टि गरेर मात्र Payment Verified गर्नुहोस् ।</p></div><button type="button" class="secondary fit" onclick="loadAdmin()">↻ Refresh</button></div>
+        <div class="filter-row"><input id="adminSearch" placeholder="नाम, जिल्ला, Listing ID खोज्नुहोस्"><select id="adminStatus"><option value="">सबै Status</option><option>PENDING_PAYMENT_REVIEW</option><option>PENDING_APPROVAL</option><option>PUBLISHED</option><option>REJECTED</option><option>RENTED</option><option>EXPIRED</option><option>SUSPENDED</option></select></div>
+        <div id="adminMsg" aria-live="polite"></div>
+        <section id="rentalAdminPanel" class="panel" style="margin:16px 0;padding:18px">
+          <h3>Property / Unit / Rental History Review</h3>
+          <p class="muted">विज्ञापनको सम्पूर्ण विवरण, फोटो र भाडा इतिहास जाँच्नुहोस् ।</p>
+          <div id="rentalStats" class="small muted"></div>
+          <div id="rentalAdminDetail"></div>
+        </section><div class="tablewrap"><table><thead><tr><th>Property</th><th>Poster</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody id="adminRows"></tbody></table></div>
+      </section>
+      <section id="tab-settings" class="panel tab-panel hidden"><h2>Website Information & Settings</h2><p class="muted">यी विवरण Google Sheet को Settings बाट सार्वजनिक वेबसाइटमा स्वतः देखिन्छन् ।</p><form id="settingsForm"><div class="two" id="settingsFields"></div><button class="fit" type="submit" id="settingsSave">Save Settings</button></form><div id="settingsMsg" aria-live="polite"></div></section>
+      <section id="tab-accounts" class="panel tab-panel hidden"><h2>Admin Accounts</h2><p class="muted">Super Admin ले Sheet मा भएका Admin लाई Active / Inactive गर्न सक्छ । हाल पुरानो खातामा सामान्य Password समर्थित छ; Reset गरेपछि Password सुरक्षित Hash मा राखिन्छ ।</p><div id="accountsMsg" aria-live="polite"></div><div class="tablewrap"><table><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody id="accountRows"></tbody></table></div></section>
+    </div>
+  </main>
+  <footer>Designed &amp; Developed by Nirajan Aryal (9851113811)</footer>
+  <script src="app.js"></script>
+  <script>
+    let token=sessionStorage.getItem('nrh_admin_token')||'';
+    let adminListings=[];
+    const statuses=['PENDING_PAYMENT_REVIEW','PENDING_APPROVAL','PUBLISHED','REJECTED','RENTED','EXPIRED','SUSPENDED'];
+    const fields=[['siteName','Website Name'],['contactPhone','Contact Phone'],['contactEmail','Contact Gmail / Email'],['contactAddress','Office Address'],['contactLocation','Google Maps Location URL'],['whatsappNumber','WhatsApp Number'],['facebookUrl','Facebook URL'],['officeHours','Office Hours'],['aboutNe','हाम्रो बारेमा (नेपाली)'],['aboutEn','About Us (English)'],['bankName','Bank Name'],['bankAccount','Bank Account'],['bankQrUrl','Bank QR Image URL'],['basicPrice','Listing Price (NPR)'],['listingDays','Listing Duration (Days)']];
+    function logout(){token='';sessionStorage.removeItem('nrh_admin_token');$('dashboard').classList.add('hidden');$('loginPanel').classList.remove('hidden');}
+    function showDashboard(){ $('loginPanel').classList.add('hidden');$('dashboard').classList.remove('hidden');loadAdmin();loadRentalStats(); }
+    function stats(){const counts=[['Total Listings',adminListings.length,'📦'],['Payment Pending',adminListings.filter(x=>x.status==='PENDING_PAYMENT_REVIEW').length,'💳'],['Approval Pending',adminListings.filter(x=>x.status==='PENDING_APPROVAL').length,'🕒'],['Published',adminListings.filter(x=>x.status==='PUBLISHED').length,'✅']];$('stats').innerHTML=counts.map(x=>`<div class="stat"><span>${x[2]}</span><strong>${x[1]}</strong><small>${x[0]}</small></div>`).join('');}
+    function renderAdmin(){const key=$('adminSearch').value.toLowerCase(),status=$('adminStatus').value;const data=adminListings.filter(r=>(!status||r.status===status)&&(!key||[r.title,r.district,r.id,r.posterName].join(' ').toLowerCase().includes(key)));$('adminRows').innerHTML=data.map(r=>`<tr><td><button type="button" class="fit secondary" onclick="reviewRental('${esc(r.id)}')">🔎 Review</button><br><strong>${esc(r.title)}</strong><br><span class="small muted">${esc(r.district)} · ${money(r.rent)}</span><br><span class="small muted">${esc(r.id)}</span></td><td>${esc(r.posterName)}<br><span class="small">${esc(r.posterPhone)} · ${esc(r.posterRole)}</span></td><td>${esc(r.paymentMethod)}<br>Ref: ${esc(r.paymentReference)}<br>${safeImage(r.paymentProofUrl)?`<a href="${esc(safeImage(r.paymentProofUrl))}" target="_blank" rel="noopener noreferrer">View Proof ↗</a>`:'No proof'}</td><td><span class="status">${esc(r.status)}</span><br><span class="small muted">${esc(r.adminNote)}</span></td><td><select id="status-${esc(r.id)}">${statuses.map(s=>`<option ${r.status===s?'selected':''}>${s}</option>`).join('')}</select><input id="note-${esc(r.id)}" placeholder="Admin note" maxlength="500"><button type="button" onclick="updateListing('${esc(r.id)}',this)">Save</button></td></tr>`).join('')||'<tr><td colspan="5">No listings found.</td></tr>';}
+    async function loadAdmin(){message($('adminMsg'),'Loading...');try{adminListings=await post({action:'adminList',token});stats();renderAdmin();message($('adminMsg'),`${adminListings.length} listings loaded`,'notice success');}catch(err){message($('adminMsg'),err.message,'notice error');if(/expired|Inactive/i.test(err.message))logout();}}
+    async function updateListing(id,button){button.disabled=true;try{const status=$('status-'+id).value,note=$('note-'+id).value;if(status==='PENDING_APPROVAL'&&!confirm('बैंकमा भुक्तानी आएको पुष्टि गर्नुभयो?'))return;if(status==='PUBLISHED'&&!confirm('सम्पत्ति विवरण जाँच गरी स्वीकृत गर्नुभयो?'))return;await post({action:'adminUpdate',token,id,status,note});await loadAdmin();}catch(err){message($('adminMsg'),err.message,'notice error');}finally{button.disabled=false;}}
+    async function loadSettings(){try{const c=await post({action:'adminConfig',token});$('settingsFields').innerHTML=fields.map(([key,label])=>`<div class="field"><label for="cfg-${key}">${esc(label)}</label>${key.startsWith('about')?`<textarea id="cfg-${key}" name="${key}">${esc(c[key]||'')}</textarea>`:`<input id="cfg-${key}" name="${key}" value="${esc(c[key]??'')}">`}</div>`).join('');}catch(err){message($('settingsMsg'),err.message,'notice error');}}
+    async function loadAccounts(){try{const accounts=await post({action:'adminAccounts',token});$('accountRows').innerHTML=accounts.map(a=>`<tr><td>${esc(a.username)}</td><td>${esc(a.displayName)}</td><td>${esc(a.role)}</td><td><span class="status">${esc(a.status)}</span></td><td><button class="fit secondary" onclick="setAccount('${esc(a.username)}','${a.status==='ACTIVE'?'INACTIVE':'ACTIVE'}')">${a.status==='ACTIVE'?'Set Inactive':'Set Active'}</button></td></tr>`).join('');}catch(err){message($('accountsMsg'),err.message,'notice error');}}
+    async function setAccount(username,status){if(!confirm(`${username} लाई ${status} बनाउने हो?`))return;try{await post({action:'adminSetStatus',token,username,status});await loadAccounts();}catch(err){message($('accountsMsg'),err.message,'notice error');}}
+    document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('hidden',x.id!=='tab-'+b.dataset.tab));if(b.dataset.tab==='settings')loadSettings();if(b.dataset.tab==='accounts')loadAccounts();}));
+    $('adminSearch').addEventListener('input',renderAdmin);$('adminStatus').addEventListener('change',renderAdmin);
+    $('settingsForm').addEventListener('submit',async e=>{e.preventDefault();$('settingsSave').disabled=true;try{await post({action:'adminSaveSettings',token,settings:Object.fromEntries(new FormData(e.target))});message($('settingsMsg'),'Settings saved to Google Sheet.','notice success');}catch(err){message($('settingsMsg'),err.message,'notice error');}finally{$('settingsSave').disabled=false;}});
+    $('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginBtn').disabled=true;try{const r=await post({action:'login',username:$('username').value,password:$('password').value});token=r.token;sessionStorage.setItem('nrh_admin_token',token);$('password').value='';$('welcome').textContent='Welcome, '+(r.displayName||'Admin');showDashboard();}catch(err){message($('loginMsg'),err.message,'notice error');}finally{$('loginBtn').disabled=false;}});
+    let resetTicket = '';
+
+    function setResetStep(step) {
+      for (let number = 1; number <= 3; number += 1) {
+        $('resetStep' + number).classList.toggle('current', number === step);
+        $('resetStep' + number).classList.toggle('completed', number < step);
+      }
+    }
+
+    $('togglePassword').addEventListener('click', function () {
+      const input = $('password');
+      const visible = input.type === 'password';
+      input.type = visible ? 'text' : 'password';
+      this.textContent = visible ? 'Hide' : 'Show';
+      this.setAttribute('aria-pressed', String(visible));
+      this.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+    });
+    $('forgotToggle').addEventListener('click', function () {
+      $('resetPanel').classList.toggle('hidden');
+      $('resetUsername').value=$('username').value;
+      setResetStep(1);
+    });
+    $('resetRequestForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const button=$('sendOtpBtn');button.disabled=true;
+      message($('resetMsg'),'OTP अनुरोध पठाउँदैछ...');
+      try {
+        const result=await post({action:'requestPasswordOtp',username:$('resetUsername').value});
+        message($('resetMsg'),result.message,'notice success');
+        $('resetVerifyForm').classList.remove('hidden');
+        setResetStep(2);
+      } catch(error) {message($('resetMsg'),error.message,'notice error');}
+      finally {button.disabled=false;}
+    });
+    $('resetVerifyForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const button=$('verifyOtpBtn');button.disabled=true;
+      try {
+        const result=await post({action:'verifyPasswordOtp',username:$('resetUsername').value,otp:$('resetOtp').value});
+        resetTicket=result.resetTicket;
+        $('resetPasswordForm').classList.remove('hidden');
+        setResetStep(3);
+        message($('resetMsg'),'OTP सफलतापूर्वक Verify भयो ।','notice success');
+      } catch(error) {message($('resetMsg'),error.message,'notice error');}
+      finally {button.disabled=false;}
+    });
+    $('resetPasswordForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      if($('newPassword').value!==$('confirmPassword').value) {
+        message($('resetMsg'),'दुवै Password समान हुनुपर्छ ।','notice error');return;
+      }
+      const button=$('resetPasswordBtn');button.disabled=true;
+      try {
+        const result=await post({action:'completePasswordReset',resetTicket,newPassword:$('newPassword').value});
+        resetTicket='';
+        $('resetPasswordForm').reset();
+        $('resetPanel').classList.add('hidden');
+        setResetStep(1);
+        message($('loginMsg'),result.message,'notice success');
+      } catch(error) {message($('resetMsg'),error.message,'notice error');}
+      finally {button.disabled=false;}
+    });
+
+    async function reviewRental(id) {
+      const el=$('rentalAdminDetail');
+      el.textContent='विवरण लोड हुँदैछ...';
+      try {
+        const data=await post({action:'adminRentalDetail',token,listingId:id});
+        const r=data.listing;
+        if(!r)throw Error('Listing not found');
+        let details={};
+        try{details=JSON.parse(r.detailsJson||'{}');}catch(error){}
+        const photos=String(r.photoUrls||'').split('\n').filter(Boolean);
+        const fields=['title','type','province','district','municipality','ward','locality','rent','deposit','amenities','description','posterName','posterPhone','paymentReference','status'];
+        const rows=fields.map(k=>'<tr><th>'+esc(k)+'</th><td>'+esc(r[k])+'</td></tr>').join('');
+        const detailRows=Object.keys(details).map(k=>'<tr><th>'+esc(k)+'</th><td>'+esc(details[k])+'</td></tr>').join('');
+        const gallery=photos.map(url=>safeImage(url)?'<a target="_blank" rel="noopener noreferrer" href="'+esc(safeImage(url))+'"><img alt="Property photo" src="'+esc(safeImage(url))+'" style="width:130px;height:90px;object-fit:cover;margin:6px;border-radius:9px"></a>':'').join('');
+        const history=data.history.map(h=>'<tr><td>'+esc(h.cycleId)+'</td><td>'+esc(h.startDate)+'</td><td>'+esc(h.endDate||'Active')+'</td><td>'+money(h.rentAmount)+'</td><td>'+esc(h.status)+'</td></tr>').join('');
+        el.innerHTML='<h3>'+esc(r.title)+'</h3><p><strong>Listing ID:</strong> '+esc(r.id)+'</p>'+gallery+
+          '<div class="tablewrap"><table><tbody>'+rows+detailRows+'</tbody></table></div>'+
+          '<h4>Rental History (Admin Only)</h4><div class="tablewrap"><table><thead><tr><th>Cycle</th><th>Start</th><th>End</th><th>Rent</th><th>Status</th></tr></thead><tbody>'+
+          (history||'<tr><td colspan="5">No rental history</td></tr>')+'</tbody></table></div>';
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+      }catch(error){el.textContent=error.message;}
+    }
+    async function loadRentalStats(){
+      try{const s=await post({action:'adminRentalStats',token});
+        $('rentalStats').textContent='Users: '+s.users+' · Units: '+s.units+' · Rented: '+s.rented+' · Rental Cycles: '+s.cycles;
+      }catch(error){$('rentalStats').textContent='Rental stats unavailable: '+error.message;}
+    }
+
+    if(token)showDashboard();
+  </script>
+</body>
+</html>
