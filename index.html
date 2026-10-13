@@ -14,6 +14,7 @@
 </header>
 <main>
   <div class="hero">
+    <div class="hero-badge">✦ NEPAL RENTAL MARKETPLACE</div>
     <h1 id="headline">नेपालभर खाली कोठा, फ्ल्याट, सटर र घर खोज्नुहोस्</h1>
     <p id="subhead">विश्वसनीय विज्ञापन • स्थान र बजेटअनुसार खोज • घरधनीसँग सम्पर्क</p>
     <div class="searchbar">
@@ -33,13 +34,17 @@
       <button type="button" class="category-card" data-property="house"><span>🏡</span><strong>घर / House</strong></button>
     </div>
   </section>
-  <section><div class="section-heading"><div><p class="section-kicker">LATEST LISTINGS</p><h2 id="latestTitle">उपलब्ध सम्पत्तिहरू</h2></div><button type="button" class="fit" id="postCta">+ Post Property</button></div>उपलब्ध सम्पत्तिहरू</h2><p id="listMsg" class="muted">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
+  <section><div class="section-heading"><div><p class="section-kicker">LATEST LISTINGS</p><h2 id="latestTitle">उपलब्ध सम्पत्तिहरू</h2></div><button type="button" class="fit" id="postCta">+ Post Property</button></div><p id="listMsg" class="muted">लोड हुँदैछ...</p><div class="grid" id="listings"></div></section>
   <section id="post" class="panel hidden" aria-label="Property registration">
-    <div class="section-heading"><h2>Property Registration</h2><button type="button" class="secondary fit" id="closePost">✕ Close</button></div>
+    <div class="section-heading"><h2>सम्पत्ति विज्ञापन दर्ता / Post Property</h2><button type="button" class="secondary fit" id="closePost">✕ Close</button></div>
     <h2 id="postTitle">सम्पत्ति विज्ञापन पोस्ट गर्नुहोस्</h2>
     <p class="notice" id="policy">सबै विज्ञापन सशुल्क छन् । Bank QR भुक्तानी प्रमाण Admin ले जाँच गरेपछि मात्र पोस्ट स्वीकृति प्रक्रियामा जान्छ ।</p>
     <div id="bankInfo" class="notice">Bank QR विवरण लोड हुँदैछ...</div>
     <form id="propertyForm">
+      <div class="form-intro">
+        <strong>सम्पत्तिको विवरण भर्नुहोस्</strong>
+        <p class="muted">सबै आवश्यक विवरण भरेर भुक्तानी प्रमाणसहित Admin Review मा पठाउनुहोस् ।</p>
+      </div>
       <div class="two">
         <div class="field"><label>पोस्टकर्ताको नाम / Name *</label><input name="posterName" required maxlength="100"></div>
         <div class="field"><label>मोबाइल / Mobile *</label><input name="posterPhone" required inputmode="tel" placeholder="98XXXXXXXX"></div>
@@ -47,9 +52,9 @@
         <div class="field"><label>सम्पत्तिको प्रकार / Type *</label><select name="type" required><option value="room">कोठा</option><option value="flat">फ्ल्याट</option><option value="shutter">सटर</option><option value="house">घर</option></select></div>
         <div class="field"><label>विज्ञापन शीर्षक / Title *</label><input name="title" required maxlength="140" placeholder="e.g. 2 BHK Flat for rent"></div>
         <div class="field"><label>प्रदेश / Province *</label><select name="province" required><option value="">छान्नुहोस्</option><option>कोशी</option><option>मधेश</option><option>बागमती</option><option>गण्डकी</option><option>लुम्बिनी</option><option>कर्णाली</option><option>सुदूरपश्चिम</option></select></div>
-        <div class="field"><label>जिल्ला / District *</label><input name="district" required maxlength="80"></div>
-        <div class="field"><label>पालिका / Municipality *</label><input name="municipality" required maxlength="100"></div>
-        <div class="field"><label>वडा / Ward</label><input name="ward" maxlength="10"></div>
+        <div class="field"><label>जिल्ला / District *</label><select name="district" id="districtSelect" required disabled><option value="">पहिले प्रदेश छान्नुहोस्</option></select></div>
+        <div class="field"><label>पालिका / Municipality *</label><input name="municipality" required maxlength="100" placeholder="पालिकाको नाम लेख्नुहोस्"></div>
+        <div class="field"><label>वडा / Ward</label><input name="ward" type="number" min="1" max="99" placeholder="वडा नम्बर"></div>
         <div class="field"><label>टोल / Locality *</label><input name="locality" required maxlength="150"></div>
         <div class="field"><label>मासिक भाडा (रु.) *</label><input name="rent" required type="number" min="1" max="100000000"></div>
         <div class="field"><label>डिपोजिट (रु.)</label><input name="deposit" type="number" min="0" value="0"></div>
@@ -143,6 +148,31 @@ $('propertyForm').addEventListener('submit',async event=>{
   try {const p=Object.fromEntries(new FormData(event.target).entries());const r=await post({action:'create',...p});message($('formMsg'),t('सफलतापूर्वक प्राप्त भयो । Listing ID: ','Submitted. Listing ID: ')+r.id+' — '+r.status,'notice success');event.target.reset();}
   catch(err){message($('formMsg'),err.message,'notice error');}finally{btn.disabled=false;}
 });
+
+/* Province-dependent district selector; the municipality field stays editable until
+   an authoritative municipality-and-ward master dataset is installed. */
+const NEPAL_DISTRICTS = {
+    'कोशी': ['ताप्लेजुङ','पाँचथर','इलाम','झापा','मोरङ','सुनसरी','धनकुटा','तेह्रथुम','संखुवासभा','भोजपुर','खोटाङ','सोलुखुम्बु','ओखलढुङ्गा','उदयपुर'],
+    'मधेश': ['सप्तरी','सिराहा','धनुषा','महोत्तरी','सर्लाही','रौतहट','बारा','पर्सा'],
+    'बागमती': ['दोलखा','रामेछाप','सिन्धुली','काभ्रेपलाञ्चोक','सिन्धुपाल्चोक','रसुवा','नुवाकोट','धादिङ','चितवन','मकवानपुर','भक्तपुर','ललितपुर','काठमाडौं'],
+    'गण्डकी': ['गोरखा','लमजुङ','तनहुँ','कास्की','मनाङ','मुस्ताङ','म्याग्दी','बागलुङ','पर्वत','स्याङ्जा','नवलपुर'],
+    'लुम्बिनी': ['रुपन्देही','कपिलवस्तु','नवलपरासी (बर्दघाट सुस्ता पश्चिम)','पाल्पा','अर्घाखाँची','गुल्मी','रोल्पा','प्युठान','दाङ','बाँके','बर्दिया','रुकुम पूर्व'],
+    'कर्णाली': ['डोल्पा','मुगु','हुम्ला','जुम्ला','कालिकोट','दैलेख','जाजरकोट','सुर्खेत','सल्यान','रुकुम पश्चिम'],
+    'सुदूरपश्चिम': ['बाजुरा','बझाङ','अछाम','डोटी','कैलाली','कञ्चनपुर','डडेल्धुरा','बैतडी','दार्चुला']
+};
+
+function updateDistrictOptions() {
+    const province = document.querySelector('[name="province"]').value;
+    const district = document.getElementById('districtSelect');
+    district.replaceChildren(new Option('जिल्ला छान्नुहोस्', ''));
+    (NEPAL_DISTRICTS[province] || []).forEach(function (name) {
+        district.add(new Option(name, name));
+    });
+    district.disabled = !province;
+}
+
+document.querySelector('[name="province"]').addEventListener('change', updateDistrictOptions);
+
 $('language').value=localStorage.getItem('nrh_lang')||'ne';
 if(localStorage.getItem('nrh_lang')==='en'){$('headline').textContent='Find rooms, flats, shutters and houses across Nepal';$('subhead').textContent='Search by location and budget • Contact property owners';$('latestTitle').textContent='Available properties';$('postTitle').textContent='Post your rental property';$('searchBtn').textContent='Search';$('submitBtn').textContent='Submit for admin review';}
 load();
