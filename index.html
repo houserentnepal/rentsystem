@@ -8,7 +8,7 @@
 <body>
 <header>
   <div class="brand">🏠 Nepal Rent Hub</div>
-  <nav><a href="index.html">Home</a><a href="#post">Post Property</a><a href="#about">About / Contact</a><a href="admin.html">Admin</a>
+  <nav><a href="index.html">Home</a><a href="#post">Post Property</a><a href="admin.html">Admin</a>
     <select class="lang" aria-label="Language" onchange="setLanguage(this.value)" id="language"><option value="ne">नेपाली</option><option value="en">English</option></select>
   </nav>
 </header>
@@ -57,9 +57,8 @@
       <div id="formMsg" style="margin-top:12px" aria-live="polite"></div>
     </form>
   </section>
-  <section class="panel about-panel" id="about"><div><div class="section-kicker">About Nepal Rent Hub</div><h2 id="aboutTitle">हाम्रो बारेमा</h2><p id="aboutText" class="muted">जानकारी लोड हुँदैछ...</p></div><div><h2 id="contactTitle">सम्पर्क</h2><div class="about-links" id="contactDetails"></div></div></section>
 </main>
-<footer class="site-footer"><div class="footer-inner"><div><h3 id="footerBrand">Nepal Rent Hub</h3><p id="footerAbout">नेपालभर भाडाको सम्पत्ति खोज्नुहोस् ।</p></div><div><strong>Quick Links</strong><p><a href="index.html">Home</a></p><p><a href="#post">Post Property</a></p><p><a href="admin.html">Admin</a></p></div><div><strong>Contact</strong><div id="footerContact"></div></div></div></footer>
+<footer>© Nepal Rent Hub • Nepal Rental Property Marketplace<br>Designed &amp; Developed by Nirajan Aryal (9851113811)</footer>
 <script src="app.js"></script>
 <script>
 let allListings=[];
@@ -72,23 +71,7 @@ function renderListings() {
 function showContact(id){const p=allListings.find(x=>x.id===id);if(!p)return;const el=$('contact-'+id);el.textContent='☎ '+p.contactPhone;}
 async function load(){
   if(!API_READY){$('listMsg').textContent='First configure the Apps Script API URL in app.js.';$('bankInfo').textContent='Configure API URL and Bank QR in Google Sheet Settings.';return;}
-  try {const [items,config]=await Promise.all([jsonp('list'),jsonp('config')]);if(!items.ok||!config.ok)throw Error('API error');allListings=items.data;renderListings();const c=config.data;
-    $('footerBrand').textContent=c.siteName||'Nepal Rent Hub';
-    $('footerAbout').textContent=t(c.aboutNe,c.aboutEn)||'';
-    $('aboutText').textContent=t(c.aboutNe,c.aboutEn)||'';
-    $('aboutTitle').textContent=t('हाम्रो बारेमा','About Us');
-    $('contactTitle').textContent=t('सम्पर्क विवरण','Contact Information');
-    const contact=[];
-    if(c.contactPhone)contact.push(`<p>☎ <a href="tel:${esc(c.contactPhone.replace(/[^+0-9]/g,''))}">${esc(c.contactPhone)}</a></p>`);
-    if(c.contactEmail)contact.push(`<p>✉ <a href="mailto:${esc(c.contactEmail)}">${esc(c.contactEmail)}</a></p>`);
-    if(c.contactAddress)contact.push(`<p>📍 ${esc(c.contactAddress)}</p>`);
-    if(c.officeHours)contact.push(`<p>🕒 ${esc(c.officeHours)}</p>`);
-    if(safeImage(c.contactLocation))contact.push(`<p><a href="${esc(safeImage(c.contactLocation))}" target="_blank" rel="noopener noreferrer">📍 View Map ↗</a></p>`);
-    if(safeImage(c.facebookUrl))contact.push(`<p><a href="${esc(safeImage(c.facebookUrl))}" target="_blank" rel="noopener noreferrer">Facebook ↗</a></p>`);
-    if(c.whatsappNumber){const n=c.whatsappNumber.replace(/[^0-9]/g,'');if(n)contact.push(`<p><a href="https://wa.me/${n}" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></p>`);}
-    $('contactDetails').innerHTML=contact.join('')||t('सम्पर्क विवरण चाँडै उपलब्ध हुनेछ ।','Contact information coming soon.');
-    $('footerContact').innerHTML=contact.slice(0,3).join('');
-    const qr=safeImage(c.bankQrUrl);$('bankInfo').innerHTML=`<strong>${t('विज्ञापन शुल्क','Listing fee')}: ${money(c.basicPrice)} / ${c.listingDays} ${t('दिन','days')}</strong><p>${esc(c.bankName)} ${esc(c.bankAccount)}</p>${qr?`<img alt="Bank QR" style="width:180px;max-width:100%" src="${esc(qr)}">`:''}<p class="small">${t('बैंक QR बाट भुक्तानी गरेर Transaction Reference र प्रमाणको लिंक राख्नुहोस् ।','Pay via bank QR and provide the transaction reference and proof link.')}</p>`;}
+  try {const [items,config]=await Promise.all([jsonp('list'),jsonp('config')]);if(!items.ok||!config.ok)throw Error('API error');allListings=items.data;renderListings();const c=config.data;const qr=safeImage(c.bankQrUrl);$('bankInfo').innerHTML=`<strong>${t('विज्ञापन शुल्क','Listing fee')}: ${money(c.basicPrice)} / ${c.listingDays} ${t('दिन','days')}</strong><p>${esc(c.bankName)} ${esc(c.bankAccount)}</p>${qr?`<img alt="Bank QR" style="width:180px;max-width:100%" src="${esc(qr)}">`:''}<p class="small">${t('बैंक QR बाट भुक्तानी गरेर Transaction Reference र प्रमाणको लिंक राख्नुहोस् ।','Pay via bank QR and provide the transaction reference and proof link.')}</p>`;}
   catch(err){$('listMsg').textContent=err.message;$('bankInfo').textContent='Could not load payment settings.';}
 }
 $('propertyForm').addEventListener('submit',async event=>{
